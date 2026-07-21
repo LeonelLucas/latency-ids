@@ -33,6 +33,10 @@ per-flow latency, and throughput.
 - `analysis/timing_summary.csv`: 360-call descriptive summary for every
   classifier/call-size/composition condition.
 - `analysis/class_effects.csv`: process-paired benign-versus-malicious tests.
+- `analysis/threshold_sensitivity.csv`: validation-selected score thresholds,
+  held-out test behavior, and precision at four malicious prevalences. It can
+  be regenerated from `prediction_scores.npz` with
+  `scripts/analyze_thresholds.py`.
 - `analysis/tree_path_correlations.csv`: decision-path/latency correlations for
   applicable tree models at call size 1.
 - `figures/latency_per_flow_vs_batch.png`: amortized latency by call size.

@@ -87,6 +87,7 @@ configs/                 smoke and definitive experiment profiles
 docs/                    design, outputs, and troubleshooting documentation
 latency_artifact/        data, training, timing, analysis, and plotting code
 results/paper/           complete compact outputs for Host-LC and Host-SW
+results/sensitivity/     earlier Host-SW test-retest execution
 scripts/                 host metadata helpers
 Dockerfile               pinned Python execution environment
 compose.yaml             manual Docker Compose entry point
@@ -108,6 +109,15 @@ Individual stages are `prepare`, `train`, `benchmark`, and `analyze`:
 
 ```bash
 docker compose run --rm artifact prepare --config configs/smoke.yaml
+```
+
+Validation-selected threshold results can be regenerated from an exported
+score file without retraining:
+
+```bash
+python scripts/analyze_thresholds.py \
+  results/paper/host-lc/results/definitive/prediction_scores.npz \
+  --output threshold_sensitivity.csv
 ```
 
 ## Reproducibility boundary
