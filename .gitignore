@@ -1,0 +1,19 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Downloaded datasets and locally regenerated large objects
+source/
+*.zip
+results/smoke/
+results/definitive/
+models/
+processed/dataset.npz
+
+# Local runner products
+ladc-data/
+ladc-run-*/
+ladc-results-*.tar.gz
+ladc-results-*.tar.gz.sha256

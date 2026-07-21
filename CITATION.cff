@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this artifact, please cite the associated paper."
+title: "Latency and Throughput in Flow-Based ML Intrusion Detection"
+type: software
+version: 1.0.0
+date-released: 2026-07-21
+url: "https://github.com/rsmiani/latency-ids"
+repository-code: "https://github.com/rsmiani/latency-ids"
+authors:
+  - family-names: Leonel
+    given-names: Lucas
+  - family-names: Molinos
+    given-names: Diego Nunes
+  - family-names: Miani
+    given-names: Rodrigo Sanches
+    email: miani@ufu.br

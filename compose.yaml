@@ -1,0 +1,18 @@
+services:
+  artifact:
+    build:
+      context: .
+    image: latency-ids:1.0.0
+    cpuset: "${CPUSET:-0}"
+    environment:
+      LATENCY_DATA_DIR: /data/raw
+      LATENCY_OUTPUT_DIR: /artifact/results/${PROFILE:-smoke}
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      VECLIB_MAXIMUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+    volumes:
+      - ../source/datasets/CICIDS2017_improved_CNS2022:/data/raw:ro
+      - ./results:/artifact/results
+    command: ["all", "--config", "configs/${PROFILE:-smoke}.yaml"]

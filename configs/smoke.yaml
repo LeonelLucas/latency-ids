@@ -1,0 +1,30 @@
+seed: 20260719
+
+paths:
+  data_dir: ${LATENCY_DATA_DIR}
+  output_dir: ${LATENCY_OUTPUT_DIR}
+
+data:
+  splits:
+    train:
+      days: [monday.csv, tuesday.csv, wednesday.csv]
+      max_per_class: 500
+    validation:
+      days: [thursday.csv]
+      max_per_class: 200
+    test:
+      days: [friday.csv]
+      max_per_class: 500
+
+models: [LoR, SGD, NB, DT, RF, GB, AB, MLP]
+
+evaluation:
+  malicious_fractions: [0.01, 0.05, 0.1, 0.5]
+  max_samples: 1000
+
+benchmark:
+  batch_sizes: [1, 8, 32, 100]
+  malicious_fractions: [0.0, 0.1, 0.5, 1.0]
+  repetitions: 3
+  process_runs: 2
+  warmup: 2
