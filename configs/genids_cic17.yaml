@@ -1,0 +1,90 @@
+seed: 20260719
+
+paths:
+  data_file: ${GENIDS_DATA_FILE}
+  output_dir: ${LATENCY_OUTPUT_DIR}
+
+genids:
+  name: GenIDS-CIC17
+
+  date_column: date
+  label_column: binary
+  benign_label: benign
+  malicious_label: malign
+
+  chunksize: 100000
+
+  # Política de features provisória.
+  # Pode ser alterada posteriormente sem modificar prepare_genids.py.
+  expected_feature_count: 57
+
+  exclude_columns:
+    # Flow Identification and Network Information
+    - expiration_id
+    - src_ip
+    - src_mac
+    - src_oui
+    - src_port
+    - dst_ip
+    - dst_mac
+    - dst_oui
+    - dst_port
+    - protocol
+    - ip_version
+    - vlan_id
+    - tunnel_id
+
+    # Absolute timestamps
+    - bidirectional_first_seen_ms
+    - bidirectional_last_seen_ms
+    - src2dst_first_seen_ms
+    - src2dst_last_seen_ms
+    - dst2src_first_seen_ms
+    - dst2src_last_seen_ms
+
+    # Application metadata
+    - application_name
+    - application_category_name
+    - application_is_guessed
+    - application_confidence
+
+    # Temporal metadata
+    - date
+    - hours
+
+    # Labels
+    - binary
+    - multiclass
+
+data:
+  splits:
+
+    train:
+      days:
+        - "2017-07-03"
+        - "2017-07-04"
+        - "2017-07-05"
+      max_per_class: 100000
+
+    validation:
+      days:
+        - "2017-07-06"
+      max_per_class: 25000
+
+    test:
+      days:
+        - "2017-07-07"
+      max_per_class: 100000
+
+models: [LoR, SGD, NB, DT, RF, GB, AB, MLP]
+
+evaluation:
+  malicious_fractions: [0.01, 0.05, 0.1, 0.5]
+  max_samples: 100000
+
+benchmark:
+  batch_sizes: [1, 8, 16, 32, 64, 100]
+  malicious_fractions: [0.0, 0.01, 0.05, 0.1, 0.5, 1.0]
+  repetitions: 30
+  process_runs: 12
+  warmup: 20
