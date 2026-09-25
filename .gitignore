@@ -30,3 +30,6 @@ results/genids_cic17_host_validation/
 multidataset-run-*/
 multidataset-results-*.tar.gz
 multidataset-results-*.tar.gz.sha256
+results/genids_unsw15/
+results/genids_unsw15_predefinitive/
+latency_artifact/*.py.save
