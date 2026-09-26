@@ -16,7 +16,7 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 
-readonly SCRIPT_VERSION="2026-09-24.2"
+readonly SCRIPT_VERSION="2026-09-26.1"
 
 readonly CICIDS2017_URL="https://intrusion-detection.distrinet-research.be/CNS2022/Datasets/CICIDS2017_improved.zip"
 readonly CICIDS2017_ARCHIVE_SHA256="97fdb91d339e2d8cf5627f981b831e5e7e400b981c58181c451a38fd03c48883"
@@ -72,10 +72,12 @@ HOST_ROOT="$RUN_ROOT/host"
 CICIDS2017_RESULTS="$RESULTS_ROOT/cicids2017"
 GENIDS_CIC17_RESULTS="$RESULTS_ROOT/genids_cic17"
 GENIDS_UNSW15_RESULTS="$RESULTS_ROOT/genids_unsw15"
+GENIDS_CIC18_RESULTS="$RESULTS_ROOT/genids_cic18"
 
 CICIDS2017_DATA_DIR="${LADC_CICIDS2017_DATA_DIR:-$START_DIR/ladc-data}"
 GENIDS_CIC17_DATA_FILE="${LADC_GENIDS_CIC17_DATA_FILE:-$START_DIR/../datasets/GenIDS-CIC17.csv}"
 GENIDS_UNSW15_DATA_FILE="${LADC_GENIDS_UNSW15_DATA_FILE:-$START_DIR/../datasets/GenIDS-UNSW15.csv}"
+GENIDS_CIC18_DATA_FILE="${LADC_GENIDS_CIC18_DATA_FILE:-$START_DIR/../datasets/GenIDS-CIC18.csv}"
 
 MAX_LOAD1="${LADC_MAX_LOAD1:-0.50}"
 COOLDOWN_SECONDS="${LADC_COOLDOWN_SECONDS:-30}"
@@ -91,12 +93,15 @@ mkdir -p \
     "$CICIDS2017_RESULTS" \
     "$GENIDS_CIC17_RESULTS" \
     "$GENIDS_UNSW15_RESULTS" \
+    "$GENIDS_CIC18_RESULTS" \
     "$LOG_ROOT/cicids2017" \
     "$LOG_ROOT/genids_cic17" \
     "$LOG_ROOT/genids_unsw15" \
+    "$LOG_ROOT/genids_cic18" \
     "$HOST_ROOT/cicids2017" \
     "$HOST_ROOT/genids_cic17" \
-    "$HOST_ROOT/genids_unsw15"
+    "$HOST_ROOT/genids_unsw15" \
+    "$HOST_ROOT/genids_cic18"
 
 printf '%s\n' "$SCRIPT_VERSION" > "$RUN_ROOT/runner_version.txt"
 
@@ -105,6 +110,7 @@ printf 'Run root:          %s\n' "$RUN_ROOT"
 printf 'CICIDS2017:        %s\n' "$CICIDS2017_RESULTS"
 printf 'GenIDS-CIC17:      %s\n' "$GENIDS_CIC17_RESULTS"
 printf 'GenIDS-UNSW15:     %s\n' "$GENIDS_UNSW15_RESULTS"
+printf 'GenIDS-CIC18:      %s\n' "$GENIDS_CIC18_RESULTS"
 
 # ---------------------------------------------------------------------------
 # Docker and experimental host controls
@@ -360,6 +366,25 @@ validate_genids_unsw15() {
         || die "SHA-256 mismatch for GenIDS-UNSW15: expected $expected_sha256, got $observed_sha256"
 
     say "GenIDS-UNSW15 input validation passed"
+}
+
+validate_genids_cic18() {
+    local expected_sha256
+    local observed_sha256
+
+    expected_sha256="b67bd1437ad1e4078296b7196946c4522390ed8f640ea1298f59b19b2923d7e2"
+
+    say "Validating GenIDS-CIC18 input file"
+
+    [[ -f "$GENIDS_CIC18_DATA_FILE" ]] \
+        || die "GenIDS-CIC18 file not found: $GENIDS_CIC18_DATA_FILE"
+
+    observed_sha256="$(sha256sum "$GENIDS_CIC18_DATA_FILE" | awk '{print $1}')"
+
+    [[ "$observed_sha256" == "$expected_sha256" ]] \
+        || die "SHA-256 mismatch for GenIDS-CIC18: expected $expected_sha256, got $observed_sha256"
+
+    say "GenIDS-CIC18 input validation passed"
 }
 
 # ---------------------------------------------------------------------------
@@ -658,6 +683,95 @@ run_genids_unsw15() {
 }
 
 # ---------------------------------------------------------------------------
+# GenIDS-CIC18 definitive experiment
+# ---------------------------------------------------------------------------
+
+run_genids_cic18() {
+    local dataset="genids_cic18"
+    local result_dir="$GENIDS_CIC18_RESULTS"
+    local log_dir="$LOG_ROOT/$dataset"
+    local genids_data_dir
+    local genids_data_name
+    local -a common_args
+
+    genids_data_dir="$(cd "$(dirname "$GENIDS_CIC18_DATA_FILE")" && pwd -P)"
+    genids_data_name="$(basename "$GENIDS_CIC18_DATA_FILE")"
+
+    mapfile -t common_args < <(docker_common_args)
+
+    say "Starting GenIDS-CIC18 definitive experiment"
+
+    capture_host "$dataset" "before_prepare"
+
+    say "GenIDS-CIC18: preparing dataset"
+    "${DOCKER[@]}" run \
+        "${common_args[@]}" \
+        --entrypoint python \
+        -e GENIDS_DATA_FILE="/data/genids/$genids_data_name" \
+        -e LATENCY_OUTPUT_DIR=/artifact/results/genids_cic18 \
+        -v "$genids_data_dir:/data/genids:ro" \
+        -v "$RESULTS_ROOT:/artifact/results:rw" \
+        "$IMAGE_TAG" \
+        -m latency_artifact.prepare_genids \
+        --config configs/genids_cic18.yaml \
+        2>&1 | tee "$log_dir/prepare.log"
+
+    say "GenIDS-CIC18: training models"
+    "${DOCKER[@]}" run \
+        "${common_args[@]}" \
+        -e GENIDS_DATA_FILE="/data/genids/$genids_data_name" \
+        -e LATENCY_OUTPUT_DIR=/artifact/results/genids_cic18 \
+        -v "$genids_data_dir:/data/genids:ro" \
+        -v "$RESULTS_ROOT:/artifact/results:rw" \
+        "$IMAGE_TAG" \
+        train --config configs/genids_cic18.yaml \
+        2>&1 | tee "$log_dir/train.log"
+
+    say "GenIDS-CIC18: cooldown for ${COOLDOWN_SECONDS}s"
+    sleep "$COOLDOWN_SECONDS"
+
+    wait_for_quiet_host "$dataset"
+    capture_host "$dataset" "before_benchmark"
+
+    say "GenIDS-CIC18: starting benchmark"
+    start_monitor "$dataset"
+
+    "${DOCKER[@]}" run \
+        "${common_args[@]}" \
+        --name "genids-cic18-benchmark-$RUN_STAMP" \
+        --hostname ladc-benchmark \
+        -e GENIDS_DATA_FILE="/data/genids/$genids_data_name" \
+        -e LATENCY_OUTPUT_DIR=/artifact/results/genids_cic18 \
+        -v "$genids_data_dir:/data/genids:ro" \
+        -v "$RESULTS_ROOT:/artifact/results:rw" \
+        "$IMAGE_TAG" \
+        benchmark --config configs/genids_cic18.yaml \
+        2>&1 | tee "$log_dir/benchmark.log"
+
+    stop_monitor
+    capture_host "$dataset" "after_benchmark"
+
+    say "GenIDS-CIC18: analyzing benchmark"
+    "${DOCKER[@]}" run \
+        "${common_args[@]}" \
+        -e GENIDS_DATA_FILE="/data/genids/$genids_data_name" \
+        -e LATENCY_OUTPUT_DIR=/artifact/results/genids_cic18 \
+        -v "$genids_data_dir:/data/genids:ro" \
+        -v "$RESULTS_ROOT:/artifact/results:rw" \
+        "$IMAGE_TAG" \
+        analyze --config configs/genids_cic18.yaml \
+        2>&1 | tee "$log_dir/analyze.log"
+
+    [[ -f "$result_dir/processed/dataset.npz" ]] \
+        || die "GenIDS-CIC18 processed dataset was not created."
+
+    [[ -f "$result_dir/analysis/timing_summary.csv" ]] \
+        || die "GenIDS-CIC18 timing summary was not created."
+
+    say "GenIDS-CIC18 definitive experiment completed"
+}
+
+# ---------------------------------------------------------------------------
 # Final validation
 # ---------------------------------------------------------------------------
 
@@ -773,6 +887,7 @@ main() {
     validate_cicids2017
     validate_genids_cic17
     validate_genids_unsw15
+    validate_genids_cic18
 
     build_experiment_image
 
@@ -800,11 +915,21 @@ main() {
         "$GENIDS_UNSW15_RESULTS" \
         "63"
 
+    say "GenIDS-UNSW15 finished; preparing for the next dataset"
+    sleep "$COOLDOWN_SECONDS"
+
+    run_genids_cic18
+    validate_experiment_output \
+        "genids_cic18" \
+        "$GENIDS_CIC18_RESULTS" \
+        "63"
+
     say "All definitive multi-dataset experiments completed successfully"
     printf '\nResults:\n'
     printf '  CICIDS2017:   %s\n' "$CICIDS2017_RESULTS"
     printf '  GenIDS-CIC17: %s\n' "$GENIDS_CIC17_RESULTS"
     printf '  GenIDS-UNSW15: %s\n' "$GENIDS_UNSW15_RESULTS"
+    printf '  GenIDS-CIC18:  %s\n' "$GENIDS_CIC18_RESULTS"
 }
 
 main "$@"

@@ -42,11 +42,28 @@ def _validate_configuration(
 
     header = pd.read_csv(csv_path, nrows=0)
 
-    date_column = config["genids"]["date_column"]
+    split_mode = config["data"].get(
+        "split_mode",
+        "days",
+    )
+
     label_column = config["genids"]["label_column"]
     excluded = list(config["genids"]["exclude_columns"])
 
-    required = [date_column, label_column]
+    if split_mode == "days":
+        required = [
+            config["genids"]["date_column"],
+            label_column,
+        ]
+    elif split_mode == "temporal_percentage":
+        required = [
+            config["data"]["temporal"]["order_column"],
+            label_column,
+        ]
+    else:
+        raise ValueError(
+            f"Unsupported split_mode: {split_mode}"
+        )
     missing_required = [
         column
         for column in required
@@ -385,6 +402,321 @@ def _build_split(
     )
 
 
+
+def _build_temporal_split(
+    split_name: str,
+    values: np.ndarray,
+    labels: np.ndarray,
+    max_per_class: int,
+    split_seed: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Apply the original split-level class sampling strategy."""
+
+    rng = np.random.default_rng(split_seed)
+
+    selected_parts: list[np.ndarray] = []
+    selected_labels: list[np.ndarray] = []
+
+    for class_id in (0, 1):
+        candidates = values[labels == class_id]
+
+        if not len(candidates):
+            raise ValueError(
+                f"No class {class_id} records in "
+                f"{split_name} temporal interval"
+            )
+
+        indices = _sample_indices(
+            np.arange(len(candidates)),
+            max_per_class,
+            rng,
+        )
+
+        selected_parts.append(
+            candidates[indices]
+        )
+
+        selected_labels.append(
+            np.full(
+                len(indices),
+                class_id,
+                dtype=np.int8,
+            )
+        )
+
+    x = np.concatenate(
+        selected_parts,
+        axis=0,
+    )
+
+    y = np.concatenate(
+        selected_labels,
+        axis=0,
+    )
+
+    order = rng.permutation(len(y))
+
+    return x[order], y[order]
+
+
+def _collect_temporal_candidates(
+    config: dict[str, Any],
+    csv_path: Path,
+    features: list[str],
+) -> tuple[
+    dict[str, tuple[np.ndarray, np.ndarray]],
+    dict[str, dict[str, Any]],
+]:
+    """Collect chronologically ordered percentage-based temporal splits."""
+
+    temporal = config["data"]["temporal"]
+    order_column = str(temporal["order_column"])
+    label_column = config["genids"]["label_column"]
+
+    benign_label = str(
+        config["genids"]["benign_label"]
+    ).strip().lower()
+
+    malicious_label = str(
+        config["genids"]["malicious_label"]
+    ).strip().lower()
+
+    chunksize = int(
+        config["genids"].get("chunksize", 100_000)
+    )
+
+    train_end = float(temporal["train_end"])
+    validation_end = float(temporal["validation_end"])
+
+    if not 0.0 < train_end < validation_end < 1.0:
+        raise ValueError(
+            "Temporal boundaries must satisfy "
+            "0 < train_end < validation_end < 1."
+        )
+
+    print(
+        f"Reading temporal order column: {order_column}"
+    )
+
+    order_parts: list[np.ndarray] = []
+
+    for chunk in pd.read_csv(
+        csv_path,
+        usecols=[order_column],
+        chunksize=chunksize,
+        low_memory=False,
+    ):
+        order_parts.append(
+            chunk[order_column].to_numpy(
+                dtype=np.float64,
+                copy=False,
+            )
+        )
+
+    order_values = np.concatenate(order_parts)
+
+    if not np.isfinite(order_values).all():
+        raise ValueError(
+            f"Non-finite values found in {order_column}."
+        )
+
+    row_order = np.argsort(
+        order_values,
+        kind="stable",
+    )
+
+    total_rows = len(row_order)
+    train_stop = int(total_rows * train_end)
+    validation_stop = int(
+        total_rows * validation_end
+    )
+
+    chronological_position = np.empty(
+        total_rows,
+        dtype=np.int64,
+    )
+    chronological_position[row_order] = np.arange(
+        total_rows,
+        dtype=np.int64,
+    )
+
+    split_parts: dict[
+        str,
+        dict[str, list[np.ndarray]],
+    ] = {
+        "train": {"values": [], "labels": []},
+        "validation": {"values": [], "labels": []},
+        "test": {"values": [], "labels": []},
+    }
+
+    split_manifest: dict[str, dict[str, Any]] = {
+        "train": {
+            "start_index": 0,
+            "stop_index": train_stop,
+        },
+        "validation": {
+            "start_index": train_stop,
+            "stop_index": validation_stop,
+        },
+        "test": {
+            "start_index": validation_stop,
+            "stop_index": total_rows,
+        },
+    }
+
+    for manifest in split_manifest.values():
+        manifest["rows"] = 0
+        manifest["finite_rows"] = 0
+        manifest["effective_benign"] = 0
+        manifest["effective_malicious"] = 0
+
+    usecols = list(
+        dict.fromkeys(
+            features + [label_column]
+        )
+    )
+
+    rows_read = 0
+
+    print(
+        f"Reading {csv_path} in chunks of "
+        f"{chunksize:,} rows..."
+    )
+
+    for chunk_number, chunk in enumerate(
+        pd.read_csv(
+            csv_path,
+            usecols=usecols,
+            chunksize=chunksize,
+            low_memory=False,
+        ),
+        start=1,
+    ):
+        start = rows_read
+        stop = start + len(chunk)
+
+        positions = chronological_position[start:stop]
+        rows_read = stop
+
+        raw_labels = (
+            chunk[label_column]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+        )
+
+        valid_labels = raw_labels.isin(
+            [benign_label, malicious_label]
+        )
+
+        if not valid_labels.all():
+            unexpected = sorted(
+                raw_labels.loc[~valid_labels]
+                .unique()
+                .tolist()
+            )
+            raise ValueError(
+                "Unexpected binary labels found: "
+                f"{unexpected}"
+            )
+
+        labels = (
+            raw_labels.eq(malicious_label)
+            .to_numpy(dtype=np.int8)
+        )
+
+        values = chunk[features].to_numpy(
+            dtype=np.float64,
+            copy=False,
+        )
+
+        finite = np.isfinite(values).all(axis=1)
+
+        masks = {
+            "train": positions < train_stop,
+            "validation": (
+                (positions >= train_stop)
+                & (positions < validation_stop)
+            ),
+            "test": positions >= validation_stop,
+        }
+
+        for split_name, split_mask in masks.items():
+            manifest = split_manifest[split_name]
+
+            manifest["rows"] += int(
+                split_mask.sum()
+            )
+
+            split_finite = split_mask & finite
+
+            manifest["finite_rows"] += int(
+                split_finite.sum()
+            )
+
+            if not split_finite.any():
+                continue
+
+            split_values = values[split_finite]
+            split_labels = labels[split_finite]
+
+            manifest["effective_benign"] += int(
+                (split_labels == 0).sum()
+            )
+            manifest["effective_malicious"] += int(
+                (split_labels == 1).sum()
+            )
+
+            split_parts[split_name]["values"].append(
+                np.asarray(
+                    split_values,
+                    dtype=np.float64,
+                )
+            )
+            split_parts[split_name]["labels"].append(
+                np.asarray(
+                    split_labels,
+                    dtype=np.int8,
+                )
+            )
+
+        if chunk_number % 10 == 0:
+            print(
+                f"  chunks={chunk_number:,} "
+                f"rows={rows_read:,}"
+            )
+
+    if rows_read != total_rows:
+        raise ValueError(
+            "Row count changed between temporal passes."
+        )
+
+    collected: dict[
+        str,
+        tuple[np.ndarray, np.ndarray],
+    ] = {}
+
+    for split_name in (
+        "train",
+        "validation",
+        "test",
+    ):
+        value_parts = split_parts[split_name]["values"]
+        label_parts = split_parts[split_name]["labels"]
+
+        if not value_parts:
+            raise ValueError(
+                f"No finite rows in {split_name}."
+            )
+
+        collected[split_name] = (
+            np.concatenate(value_parts, axis=0),
+            np.concatenate(label_parts, axis=0),
+        )
+
+    return collected, split_manifest
+
+
 def prepare_genids(config: dict[str, Any]) -> None:
     """Prepare a GenIDS dataset using the original artifact contract."""
 
@@ -417,27 +749,67 @@ def prepare_genids(config: dict[str, Any]) -> None:
         csv_path,
     )
 
+    split_mode = config["data"].get(
+        "split_mode",
+        "days",
+    )
+
     print(f"Dataset: {csv_path}")
     print(f"Feature count: {len(features)}")
-    print("Temporal split:")
+    print(f"Split mode: {split_mode}")
 
-    for split_name in (
-        "train",
-        "validation",
-        "test",
-    ):
+    if split_mode == "days":
+        print("Temporal split:")
+
+        for split_name in (
+            "train",
+            "validation",
+            "test",
+        ):
+            print(
+                f"  {split_name}: "
+                f"{config['data']['splits'][split_name]['days']}"
+            )
+
+        daily_parts, daily_manifest = (
+            _collect_daily_candidates(
+                config=config,
+                csv_path=csv_path,
+                features=features,
+            )
+        )
+
+        temporal_data = None
+        temporal_manifest = None
+
+    elif split_mode == "temporal_percentage":
+        temporal = config["data"]["temporal"]
+
         print(
-            f"  {split_name}: "
-            f"{config['data']['splits'][split_name]['days']}"
+            "Temporal percentage split: "
+            f"train=0-{float(temporal['train_end']):.2%}, "
+            f"validation="
+            f"{float(temporal['train_end']):.2%}-"
+            f"{float(temporal['validation_end']):.2%}, "
+            f"test="
+            f"{float(temporal['validation_end']):.2%}-100%"
         )
 
-    daily_parts, daily_manifest = (
-        _collect_daily_candidates(
-            config=config,
-            csv_path=csv_path,
-            features=features,
+        temporal_data, temporal_manifest = (
+            _collect_temporal_candidates(
+                config=config,
+                csv_path=csv_path,
+                features=features,
+            )
         )
-    )
+
+        daily_parts = None
+        daily_manifest = None
+
+    else:
+        raise ValueError(
+            f"Unsupported split_mode: {split_mode}"
+        )
 
     arrays: dict[str, np.ndarray] = {}
 
@@ -449,12 +821,25 @@ def prepare_genids(config: dict[str, Any]) -> None:
         ),
         "source_file": str(csv_path.resolve()),
         "source_sha256": sha256(csv_path),
+        "split_mode": split_mode,
         "splits": {},
         "features": features,
         "excluded_columns": list(
             config["genids"]["exclude_columns"]
         ),
     }
+
+    if split_mode == "temporal_percentage":
+        manifest["temporal_split"] = {
+            "order_column": config["data"]["temporal"]["order_column"],
+            "sort_kind": "stable",
+            "train_end": float(
+                config["data"]["temporal"]["train_end"]
+            ),
+            "validation_end": float(
+                config["data"]["temporal"]["validation_end"]
+            ),
+        }
 
     for split_index, split_name in enumerate(
         ("train", "validation", "test")
@@ -466,19 +851,38 @@ def prepare_genids(config: dict[str, Any]) -> None:
             + split_index * 10_000
         )
 
-        x, y, day_manifest = _build_split(
-            split_name=split_name,
-            spec=spec,
-            split_seed=split_seed,
-            daily_parts=daily_parts,
-            daily_manifest=daily_manifest,
-        )
+        if split_mode == "days":
+            x, y, day_manifest = _build_split(
+                split_name=split_name,
+                spec=spec,
+                split_seed=split_seed,
+                daily_parts=daily_parts,
+                daily_manifest=daily_manifest,
+            )
+
+            split_manifest = {
+                "days": day_manifest,
+            }
+
+        else:
+            values, labels = temporal_data[split_name]
+
+            x, y = _build_temporal_split(
+                split_name=split_name,
+                values=values,
+                labels=labels,
+                max_per_class=int(spec["max_per_class"]),
+                split_seed=split_seed,
+            )
+
+            split_manifest = dict(
+                temporal_manifest[split_name]
+            )
 
         arrays[f"X_{split_name}"] = x
         arrays[f"y_{split_name}"] = y
 
-        manifest["splits"][split_name] = {
-            "days": day_manifest,
+        split_manifest.update({
             "selected_rows": int(len(y)),
             "selected_benign": int(
                 (y == 0).sum()
@@ -486,7 +890,9 @@ def prepare_genids(config: dict[str, Any]) -> None:
             "selected_malicious": int(
                 (y == 1).sum()
             ),
-        }
+        })
+
+        manifest["splits"][split_name] = split_manifest
 
         print(
             f"{split_name}: X={x.shape} "
