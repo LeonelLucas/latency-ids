@@ -26,6 +26,27 @@ readonly CICIDS2017_WEDNESDAY_SHA256="bf46c5f3c792e8817381f724511229569606918eaf
 readonly CICIDS2017_THURSDAY_SHA256="78a4d11eaf473d099e30e71ddb01e0f38218e844c0a9cdd36602145d674af482"
 readonly CICIDS2017_FRIDAY_SHA256="ebd499e6f23bd59f9cb81bec28178491b02b925fa5640a24215c9437d79482d0"
 
+show_logo() {
+    cat <<'EOF'
+
+  ___   ____    ____  
+ |_ _| |  _ \  / ___| 
+  | |  | | | | \___ \ 
+  | |  | |_| |  ___) |
+ |___| |____/  |____/ 
+
+  _____ ____      _    ____  _____        ___  _____ _____     
+ |_   _|  _ \    / \  |  _ \| ____|      / _ \|  ___|  ___|___ 
+   | | | |_) |  / _ \ | | | |  _| _____| | | | |_  | |_ / __|
+   | | |  _ <  / ___ \| |_| | |__|_____| |_| |  _| |  _|\__ \
+   |_| |_| \_\/_/   \_\____/|_____|     \___/|_|   |_|  |___/
+
+                         IDS TRADE-OFFs
+              Reproducible Multi-Dataset ML-IDS Evaluation
+
+EOF
+}
+
 say() {
     printf '\n[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
 }
@@ -880,6 +901,7 @@ print(
 # ---------------------------------------------------------------------------
 
 main() {
+    show_logo
     say "Starting definitive multi-dataset experiment"
     printf 'Runner version:    %s\n' "$SCRIPT_VERSION"
     printf 'Execution root:    %s\n' "$RUN_ROOT"
