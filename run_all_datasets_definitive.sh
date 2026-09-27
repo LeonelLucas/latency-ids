@@ -84,7 +84,7 @@ trap 'printf "\nExecution interrupted; partial files were preserved.\n" >&2; exi
 START_DIR="$(pwd -P)"
 RUN_STAMP="$(date -u '+%Y%m%dT%H%M%SZ')"
 
-RUN_ROOT="${LADC_MULTI_OUTPUT_DIR:-$START_DIR/multidataset-run-$RUN_STAMP}"
+RUN_ROOT="${TRADEOFF_MULTI_OUTPUT_DIR:-$START_DIR/multidataset-run-$RUN_STAMP}"
 
 RESULTS_ROOT="$RUN_ROOT/results"
 LOG_ROOT="$RUN_ROOT/logs"
@@ -95,15 +95,15 @@ GENIDS_CIC17_RESULTS="$RESULTS_ROOT/genids_cic17"
 GENIDS_UNSW15_RESULTS="$RESULTS_ROOT/genids_unsw15"
 GENIDS_CIC18_RESULTS="$RESULTS_ROOT/genids_cic18"
 
-CICIDS2017_DATA_DIR="${LADC_CICIDS2017_DATA_DIR:-$START_DIR/ladc-data}"
-GENIDS_CIC17_DATA_FILE="${LADC_GENIDS_CIC17_DATA_FILE:-$START_DIR/../datasets/GenIDS-CIC17.csv}"
-GENIDS_UNSW15_DATA_FILE="${LADC_GENIDS_UNSW15_DATA_FILE:-$START_DIR/../datasets/GenIDS-UNSW15.csv}"
-GENIDS_CIC18_DATA_FILE="${LADC_GENIDS_CIC18_DATA_FILE:-$START_DIR/../datasets/GenIDS-CIC18.csv}"
+CICIDS2017_DATA_DIR="${TRADEOFF_CICIDS2017_DATA_DIR:-$START_DIR/ladc-data}"
+GENIDS_CIC17_DATA_FILE="${TRADEOFF_GENIDS_CIC17_DATA_FILE:-$START_DIR/../datasets/GenIDS-CIC17.csv}"
+GENIDS_UNSW15_DATA_FILE="${TRADEOFF_GENIDS_UNSW15_DATA_FILE:-$START_DIR/../datasets/GenIDS-UNSW15.csv}"
+GENIDS_CIC18_DATA_FILE="${TRADEOFF_GENIDS_CIC18_DATA_FILE:-$START_DIR/../datasets/GenIDS-CIC18.csv}"
 
-MAX_LOAD1="${LADC_MAX_LOAD1:-0.50}"
-COOLDOWN_SECONDS="${LADC_COOLDOWN_SECONDS:-30}"
-QUIET_WAIT_SECONDS="${LADC_QUIET_WAIT_SECONDS:-300}"
-MONITOR_INTERVAL_SECONDS="${LADC_MONITOR_INTERVAL_SECONDS:-2}"
+MAX_LOAD1="${TRADEOFF_MAX_LOAD1:-0.50}"
+COOLDOWN_SECONDS="${TRADEOFF_COOLDOWN_SECONDS:-30}"
+QUIET_WAIT_SECONDS="${TRADEOFF_QUIET_WAIT_SECONDS:-300}"
+MONITOR_INTERVAL_SECONDS="${TRADEOFF_MONITOR_INTERVAL_SECONDS:-2}"
 
 [[ "$(uname -s)" == "Linux" ]] || die "This runner must execute on Linux."
 (( BASH_VERSINFO[0] >= 4 )) || die "Bash 4 or newer is required."
@@ -162,9 +162,9 @@ ONLINE_CPUS="$(nproc --all)"
 (( ONLINE_CPUS >= 1 )) || die "Could not determine the number of logical CPUs."
 
 DEFAULT_CPU="$(( ONLINE_CPUS - 1 ))"
-CPU="${LADC_CPU:-$DEFAULT_CPU}"
+CPU="${TRADEOFF_CPU:-$DEFAULT_CPU}"
 
-[[ "$CPU" =~ ^[0-9]+$ ]] || die "LADC_CPU must be a non-negative integer."
+[[ "$CPU" =~ ^[0-9]+$ ]] || die "TRADEOFF_CPU must be a non-negative integer."
 [[ -d "/sys/devices/system/cpu/cpu$CPU" ]] || die "Logical CPU $CPU does not exist."
 
 if [[ -r "/sys/devices/system/cpu/cpu$CPU/online" ]]; then
@@ -493,7 +493,7 @@ run_cicids2017() {
     "${DOCKER[@]}" run \
         "${common_args[@]}" \
         --name "cicids2017-benchmark-$RUN_STAMP" \
-        --hostname ladc-benchmark \
+        --hostname tradeoff-benchmark \
         -e LATENCY_DATA_DIR=/data/raw \
         -e LATENCY_OUTPUT_DIR=/artifact/results/cicids2017 \
         -v "$CICIDS2017_DATA_DIR:/data/raw:ro" \
@@ -582,7 +582,7 @@ run_genids_cic17() {
     "${DOCKER[@]}" run \
         "${common_args[@]}" \
         --name "genids-cic17-benchmark-$RUN_STAMP" \
-        --hostname ladc-benchmark \
+        --hostname tradeoff-benchmark \
         -e GENIDS_DATA_FILE="/data/genids/$genids_data_name" \
         -e LATENCY_OUTPUT_DIR=/artifact/results/genids_cic17 \
         -v "$genids_data_dir:/data/genids:ro" \
@@ -671,7 +671,7 @@ run_genids_unsw15() {
     "${DOCKER[@]}" run \
         "${common_args[@]}" \
         --name "genids-unsw15-benchmark-$RUN_STAMP" \
-        --hostname ladc-benchmark \
+        --hostname tradeoff-benchmark \
         -e GENIDS_DATA_FILE="/data/genids/$genids_data_name" \
         -e LATENCY_OUTPUT_DIR=/artifact/results/genids_unsw15 \
         -v "$genids_data_dir:/data/genids:ro" \
@@ -760,7 +760,7 @@ run_genids_cic18() {
     "${DOCKER[@]}" run \
         "${common_args[@]}" \
         --name "genids-cic18-benchmark-$RUN_STAMP" \
-        --hostname ladc-benchmark \
+        --hostname tradeoff-benchmark \
         -e GENIDS_DATA_FILE="/data/genids/$genids_data_name" \
         -e LATENCY_OUTPUT_DIR=/artifact/results/genids_cic18 \
         -v "$genids_data_dir:/data/genids:ro" \
