@@ -896,6 +896,31 @@ print(
     say "$dataset: definitive output validation passed"
 }
 
+run_threshold_sensitivity() {
+    local dataset="$1"
+    local result_dir="$2"
+
+    local scores="$result_dir/prediction_scores.npz"
+    local output="$result_dir/analysis/threshold_sensitivity.csv"
+
+    [[ -f "$scores" ]] \
+        || die "$dataset: prediction scores not found: $scores"
+
+    mkdir -p "$result_dir/analysis"
+
+    say "$dataset: running threshold sensitivity analysis"
+
+    python3 scripts/analyze_thresholds.py \
+        "$scores" \
+        --output "$output" \
+        2>&1 | tee "$LOG_ROOT/$dataset/threshold_sensitivity.log"
+
+    [[ -s "$output" ]] \
+        || die "$dataset: threshold sensitivity output was not created"
+
+    say "$dataset: threshold sensitivity analysis completed"
+}
+
 # ---------------------------------------------------------------------------
 # Main execution
 # ---------------------------------------------------------------------------
@@ -918,6 +943,7 @@ main() {
         "cicids2017" \
         "$CICIDS2017_RESULTS" \
         "84"
+    run_threshold_sensitivity "cicids2017" "$CICIDS2017_RESULTS"
 
     say "CICIDS2017 finished; preparing for the next dataset"
     sleep "$COOLDOWN_SECONDS"
@@ -927,6 +953,7 @@ main() {
         "genids_cic17" \
         "$GENIDS_CIC17_RESULTS" \
         "57"
+    run_threshold_sensitivity "genids_cic17" "$GENIDS_CIC17_RESULTS"
 
     say "GenIDS-CIC17 finished; preparing for the next dataset"
     sleep "$COOLDOWN_SECONDS"
@@ -936,6 +963,7 @@ main() {
         "genids_unsw15" \
         "$GENIDS_UNSW15_RESULTS" \
         "63"
+    run_threshold_sensitivity "genids_unsw15" "$GENIDS_UNSW15_RESULTS"
 
     say "GenIDS-UNSW15 finished; preparing for the next dataset"
     sleep "$COOLDOWN_SECONDS"
@@ -945,6 +973,7 @@ main() {
         "genids_cic18" \
         "$GENIDS_CIC18_RESULTS" \
         "63"
+    run_threshold_sensitivity "genids_cic18" "$GENIDS_CIC18_RESULTS"
 
     say "All definitive multi-dataset experiments completed successfully"
     printf '\nResults:\n'
