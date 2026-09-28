@@ -910,9 +910,15 @@ run_threshold_sensitivity() {
 
     say "$dataset: running threshold sensitivity analysis"
 
-    python3 scripts/analyze_thresholds.py \
-        "$scores" \
-        --output "$output" \
+    docker run --rm \
+        --entrypoint python \
+        -v "$result_dir:/artifact/results/definitive" \
+        "$IMAGE_TAG" \
+        scripts/analyze_thresholds.py \
+        /artifact/results/definitive/prediction_scores.npz \
+        --output /artifact/results/definitive/analysis/threshold_sensitivity.csv \
+        --seed 20260719 \
+        --max-samples 100000 \
         2>&1 | tee "$LOG_ROOT/$dataset/threshold_sensitivity.log"
 
     [[ -s "$output" ]] \
