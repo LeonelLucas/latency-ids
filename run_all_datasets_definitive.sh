@@ -100,6 +100,22 @@ GENIDS_CIC17_DATA_FILE="${TRADEOFF_GENIDS_CIC17_DATA_FILE:-$START_DIR/../dataset
 GENIDS_UNSW15_DATA_FILE="${TRADEOFF_GENIDS_UNSW15_DATA_FILE:-$START_DIR/../datasets/GenIDS-UNSW15.csv}"
 GENIDS_CIC18_DATA_FILE="${TRADEOFF_GENIDS_CIC18_DATA_FILE:-$START_DIR/../datasets/GenIDS-CIC18.csv}"
 
+# Automatically obtain the standard datasets when the default dataset layout
+# is being used. Explicit TRADEOFF_* dataset overrides remain untouched.
+if [[ -z "${TRADEOFF_CICIDS2017_DATA_DIR:-}" &&
+      -z "${TRADEOFF_GENIDS_CIC17_DATA_FILE:-}" &&
+      -z "${TRADEOFF_GENIDS_UNSW15_DATA_FILE:-}" &&
+      -z "${TRADEOFF_GENIDS_CIC18_DATA_FILE:-}" ]]; then
+
+    DATASET_DOWNLOADER="$START_DIR/scripts/download_datasets.sh"
+    [[ -x "$DATASET_DOWNLOADER" ]] || die "Dataset downloader not found or not executable: $DATASET_DOWNLOADER"
+
+    say "Checking required datasets"
+    TRADEOFF_DATA_DIR="$START_DIR/../datasets" "$DATASET_DOWNLOADER"
+else
+    say "Custom dataset paths detected; automatic dataset download skipped"
+fi
+
 MAX_LOAD1="${TRADEOFF_MAX_LOAD1:-0.50}"
 COOLDOWN_SECONDS="${TRADEOFF_COOLDOWN_SECONDS:-30}"
 QUIET_WAIT_SECONDS="${TRADEOFF_QUIET_WAIT_SECONDS:-300}"
