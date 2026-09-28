@@ -16,7 +16,7 @@ GENIDS_UNSW15_SHA256="2437a5fb6ae6f37d47e24e2fc4ee2df243248679f412a0f3dd1ffd7e75
 
 need_cmd() {
     command -v "$1" >/dev/null 2>&1 || {
-        echo "ERRO: comando obrigatório não encontrado: $1" >&2
+        echo "ERROR: required command not found: $1" >&2
         exit 1
     }
 }
@@ -32,7 +32,7 @@ check_sha256() {
 download() {
     local url="$1"
     local output="$2"
-    echo "Baixando: $(basename "$output")"
+    echo "Downloading: $(basename "$output")"
     curl -L --fail --retry 3 --progress-bar -o "$output" "$url"
 }
 
@@ -45,7 +45,7 @@ mkdir -p "$DATA_DIR/CICIDS2017"
 echo "========================================"
 echo " IDS TRADE-OFFs - Dataset Setup"
 echo "========================================"
-echo "Destino: $DATA_DIR"
+echo "Destination: $DATA_DIR"
 echo
 
 # ------------------------------------------------------------
@@ -57,24 +57,24 @@ if [[ -f "$CIC17_ZIP" ]] && check_sha256 "$CIC17_ZIP" "$CIC17_ZIP_SHA256"; then
     echo "[OK] CICIDS2017_improved.zip"
 else
     [[ -f "$CIC17_ZIP" ]] && {
-        echo "ERRO: CICIDS2017_improved.zip existe, mas o SHA-256 é diferente." >&2
+        echo "ERROR: CICIDS2017_improved.zip exists, but its SHA-256 does not match." >&2
         exit 1
     }
 
     download "$CIC17_URL" "$TMP_DIR/CICIDS2017_improved.zip"
 
     check_sha256 "$TMP_DIR/CICIDS2017_improved.zip" "$CIC17_ZIP_SHA256" || {
-        echo "ERRO: SHA-256 inválido para CICIDS2017_improved.zip" >&2
+        echo "ERROR: invalid SHA-256 for CICIDS2017_improved.zip" >&2
         exit 1
     }
 
     mv "$TMP_DIR/CICIDS2017_improved.zip" "$CIC17_ZIP"
-    echo "[OK] CICIDS2017_improved.zip baixado e verificado"
+    echo "[OK] CICIDS2017_improved.zip downloaded and verified"
 fi
 
 for day in monday tuesday wednesday thursday friday; do
     if [[ ! -f "$DATA_DIR/CICIDS2017/${day}.csv" ]]; then
-        echo "Extraindo ${day}.csv..."
+        echo "Extracting ${day}.csv..."
         unzip -p "$CIC17_ZIP" "${day}.csv" > "$DATA_DIR/CICIDS2017/${day}.csv"
     fi
 done
@@ -94,7 +94,7 @@ install_genids() {
             return
         fi
 
-        echo "ERRO: $(basename "$output") existe, mas o SHA-256 é diferente." >&2
+        echo "ERROR: $(basename "$output") exists, but its SHA-256 does not match." >&2
         exit 1
     fi
 
@@ -102,16 +102,16 @@ install_genids() {
 
     download "$ZENODO_BASE/$zip_name/content" "$zip_path"
 
-    echo "Extraindo $(basename "$output")..."
+    echo "Extracting $(basename "$output")..."
     unzip -p "$zip_path" "$member" > "$TMP_DIR/$(basename "$output")"
 
     check_sha256 "$TMP_DIR/$(basename "$output")" "$expected_sha" || {
-        echo "ERRO: SHA-256 inválido para $(basename "$output")" >&2
+        echo "ERROR: invalid SHA-256 for $(basename "$output")" >&2
         exit 1
     }
 
     mv "$TMP_DIR/$(basename "$output")" "$output"
-    echo "[OK] $(basename "$output") baixado e verificado"
+    echo "[OK] $(basename "$output") downloaded and verified"
 }
 
 install_genids \
@@ -134,5 +134,5 @@ install_genids \
 
 echo
 echo "========================================"
-echo " TODOS OS DATASETS ESTÃO PRONTOS"
+echo " ALL DATASETS ARE READY"
 echo "========================================"
