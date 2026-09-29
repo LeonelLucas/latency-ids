@@ -14,9 +14,10 @@ genids:
 
   chunksize: 100000
 
-  # Política de features provisória.
-  # Pode ser alterada posteriormente sem modificar prepare_genids.py.
-  expected_feature_count: 57
+  # Features numéricas restantes após remover identificadores,
+  # timestamps absolutos, metadados de aplicação e labels.
+  # Mantemos portas, protocolo, versão IP, VLAN e tunnel ID.
+  expected_feature_count: 63
 
   exclude_columns:
     # Flow Identification and Network Information
@@ -24,15 +25,9 @@ genids:
     - src_ip
     - src_mac
     - src_oui
-    - src_port
     - dst_ip
     - dst_mac
     - dst_oui
-    - dst_port
-    - protocol
-    - ip_version
-    - vlan_id
-    - tunnel_id
 
     # Absolute timestamps
     - bidirectional_first_seen_ms
