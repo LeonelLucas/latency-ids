@@ -268,10 +268,18 @@ monitor_host() {
 start_monitor() {
     local dataset="$1"
     local destination="$HOST_ROOT/$dataset/benchmark_monitor.csv"
+    local monitor_cpu
 
     stop_monitor
     monitor_host > "$destination" &
     MONITOR_PID=$!
+
+    if command -v taskset >/dev/null 2>&1 && (( ONLINE_CPUS > 1 )); then
+        monitor_cpu=0
+        [[ "$CPU" != "0" ]] || monitor_cpu=1
+
+        taskset -pc "$monitor_cpu" "$MONITOR_PID"             > "$HOST_ROOT/$dataset/monitor_affinity.txt" 2>&1             || warn "$dataset: could not pin host monitor to CPU $monitor_cpu."
+    fi
 }
 
 capture_host() {
@@ -457,6 +465,11 @@ docker_common_args() {
         "--pids-limit" "512" \
         "--cap-drop" "ALL" \
         "--security-opt" "no-new-privileges:true"
+
+    if command -v getenforce >/dev/null 2>&1 &&
+       [[ "$(getenforce)" == "Enforcing" ]]; then
+        printf '%s\n' "--security-opt" "label=disable"
+    fi
 }
 
 # ---------------------------------------------------------------------------
@@ -901,11 +914,45 @@ assert fractions == [0.0, 0.01, 0.05, 0.1, 0.5, 1.0], fractions
 assert {int(row['n']) for row in rows} == {360}
 assert {int(row['process_runs']) for row in rows} == {12}
 
+metadata_files = sorted(
+    glob.glob(str(root / 'benchmark' / 'raw' / 'metadata_*.json'))
+)
+assert len(metadata_files) == 12, (
+    f'expected 12 benchmark metadata files, got {len(metadata_files)}'
+)
+
+for filename in metadata_files:
+    with open(filename) as handle:
+        metadata = json.load(handle)
+
+    assert metadata.get('one_cpu_affinity') is True, (
+        f'{filename}: one_cpu_affinity is not true'
+    )
+
+    cpu_affinity = metadata.get('cpu_affinity')
+    assert isinstance(cpu_affinity, list) and len(cpu_affinity) == 1, (
+        f'{filename}: expected exactly one CPU in cpu_affinity, '
+        f'got {cpu_affinity!r}'
+    )
+
+    threadpools = metadata.get('threadpool_info')
+    assert isinstance(threadpools, list) and threadpools, (
+        f'{filename}: missing threadpool metadata'
+    )
+
+    for pool in threadpools:
+        assert int(pool.get('num_threads', -1)) == 1, (
+            f'{filename}: thread pool is not single-threaded: {pool!r}'
+        )
+
 print(
     f'VALIDATION OK: $dataset; '
     f'features={feature_count}; '
     f'benchmark_rows={total_rows}; '
-    f'timing_summary_rows={len(rows)}'
+    f'timing_summary_rows={len(rows)}; '
+    f'metadata_files={len(metadata_files)}; '
+    f'cpu_affinity=PASS; '
+    f'threadpools=PASS'
 )
 " 2>&1 | tee "$LOG_ROOT/$dataset/validation.log"
 
@@ -926,7 +973,7 @@ run_threshold_sensitivity() {
 
     say "$dataset: running threshold sensitivity analysis"
 
-    docker run --rm \
+    "${DOCKER[@]}" run --rm \
         --entrypoint python \
         -v "$result_dir:/artifact/results/definitive" \
         "$IMAGE_TAG" \
@@ -941,6 +988,138 @@ run_threshold_sensitivity() {
         || die "$dataset: threshold sensitivity output was not created"
 
     say "$dataset: threshold sensitivity analysis completed"
+}
+
+# ---------------------------------------------------------------------------
+# Compact reproducibility package
+# ---------------------------------------------------------------------------
+
+create_final_package() {
+    local package_root="$RUN_ROOT/final_package"
+    local archive="$START_DIR/multidataset-results-$RUN_STAMP.tar.gz"
+    local dataset
+    local result_dir
+
+    say "Creating compact final multi-dataset package"
+
+    rm -rf "$package_root"
+
+    mkdir -p \
+        "$package_root/results" \
+        "$package_root/logs" \
+        "$package_root/host" \
+        "$package_root/artifact_snapshot"
+
+    cp "$RUN_ROOT/runner_version.txt" "$package_root/"
+    cp -R "$LOG_ROOT/." "$package_root/logs/"
+    cp -R "$HOST_ROOT/." "$package_root/host/"
+
+    cp run_all_datasets_definitive.sh \
+        "$package_root/artifact_snapshot/"
+    cp PROTOCOL.md \
+        "$package_root/artifact_snapshot/"
+    cp Dockerfile \
+        "$package_root/artifact_snapshot/"
+    cp requirements.txt \
+        "$package_root/artifact_snapshot/"
+
+    cp -R configs \
+        "$package_root/artifact_snapshot/"
+    cp -R latency_artifact \
+        "$package_root/artifact_snapshot/"
+    cp -R scripts \
+        "$package_root/artifact_snapshot/"
+
+    for dataset in \
+        cicids2017 \
+        genids_cic17 \
+        genids_unsw15 \
+        genids_cic18
+    do
+        result_dir="$RESULTS_ROOT/$dataset"
+
+        mkdir -p \
+            "$package_root/results/$dataset/analysis" \
+            "$package_root/results/$dataset/benchmark/raw" \
+            "$package_root/results/$dataset/processed"
+
+        cp -R "$result_dir/analysis/." \
+            "$package_root/results/$dataset/analysis/"
+
+        cp "$result_dir/predictive_metrics.csv" \
+            "$package_root/results/$dataset/"
+
+        cp "$result_dir/training_metadata.json" \
+            "$package_root/results/$dataset/"
+
+        if [[ -f "$result_dir/prediction_scores_metadata.json" ]]; then
+            cp "$result_dir/prediction_scores_metadata.json" \
+                "$package_root/results/$dataset/"
+        fi
+
+        if [[ -f "$result_dir/processed/dataset_manifest.json" ]]; then
+            cp "$result_dir/processed/dataset_manifest.json" \
+                "$package_root/results/$dataset/processed/"
+        fi
+
+        cp "$result_dir/benchmark/raw/"metadata_*.json \
+            "$package_root/results/$dataset/benchmark/raw/"
+
+        find "$result_dir/models" -type f -name '*.joblib' \
+            -print0 2>/dev/null |
+            sort -z |
+            xargs -0 -r sha256sum \
+            > "$package_root/results/$dataset/excluded_model_sha256.txt"
+
+        sha256sum "$result_dir/processed/dataset.npz" \
+            > "$package_root/results/$dataset/excluded_dataset_npz_sha256.txt"
+
+        if [[ -f "$result_dir/prediction_scores.npz" ]]; then
+            sha256sum "$result_dir/prediction_scores.npz" \
+                > "$package_root/results/$dataset/excluded_prediction_scores_npz_sha256.txt"
+        fi
+    done
+
+    cat > "$package_root/README_RESULTS.txt" <<EOF
+Definitive multi-dataset ML-IDS experiment
+Runner version: $SCRIPT_VERSION
+Run stamp: $RUN_STAMP
+
+Included:
+- source/configuration snapshot
+- experiment logs
+- host metadata and benchmark monitoring
+- analysis outputs
+- predictive metrics
+- training metadata
+- benchmark metadata
+- processed dataset manifests
+- hashes of large excluded artifacts
+
+Intentionally excluded from this compact package:
+- raw source datasets
+- processed dataset.npz files
+- trained model .joblib files
+- prediction_scores.npz files
+
+The complete execution remains available at:
+$RUN_ROOT
+EOF
+
+    (
+        cd "$package_root"
+        find . -type f ! -name SHA256SUMS \
+            -print0 |
+            sort -z |
+            xargs -0 sha256sum > SHA256SUMS
+    )
+
+    tar -C "$package_root" -czf "$archive" .
+    sha256sum "$archive" > "$archive.sha256"
+
+    say "Final compact package created"
+    printf 'Archive:  %s\n' "$archive"
+    printf 'Checksum: %s\n' "$archive.sha256"
 }
 
 # ---------------------------------------------------------------------------
@@ -974,7 +1153,7 @@ main() {
     validate_experiment_output \
         "genids_cic17" \
         "$GENIDS_CIC17_RESULTS" \
-        "57"
+        "63"
     run_threshold_sensitivity "genids_cic17" "$GENIDS_CIC17_RESULTS"
 
     say "GenIDS-CIC17 finished; preparing for the next dataset"
@@ -996,6 +1175,8 @@ main() {
         "$GENIDS_CIC18_RESULTS" \
         "63"
     run_threshold_sensitivity "genids_cic18" "$GENIDS_CIC18_RESULTS"
+
+    create_final_package
 
     say "All definitive multi-dataset experiments completed successfully"
     printf '\nResults:\n'
