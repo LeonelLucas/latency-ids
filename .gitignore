@@ -33,3 +33,13 @@ multidataset-results-*.tar.gz.sha256
 results/genids_unsw15/
 results/genids_unsw15_predefinitive/
 latency_artifact/*.py.save
+
+# Local documentation and audit artifacts
+*.old
+*.before-*
+*-audit.txt
+*-review.txt
+documentation-*.txt
+
+# Local experiment console captures
+definitive-*-console.log
