@@ -51,7 +51,7 @@ protocol across all four datasets.
 |---|---|
 | Datasets | 4 |
 | Machine learning models | 8 |
-| Batch sizes | 1, 8, 16, 32, 64, 128 |
+| Batch sizes | 1, 8, 16, 32, 64, 100 |
 | Requested malicious fractions | 0.00, 0.01, 0.05, 0.10, 0.50, 1.00 |
 | Repetitions | 30 |
 | Independent processes | 12 |
@@ -74,7 +74,7 @@ The resulting definitive experimental scale is summarized below.
 |---|---|
 | Datasets | CICIDS2017, GenIDS-CIC17, GenIDS-UNSW15, GenIDS-CIC18 |
 | Machine learning models | 8 |
-| Batch sizes | 1, 8, 16, 32, 64, 128 |
+| Batch sizes | 1, 8, 16, 32, 64, 100 |
 | Requested malicious fractions | 0.00, 0.01, 0.05, 0.10, 0.50, 1.00 |
 | Repetitions | 30 |
 | Independent processes | 12 |
@@ -191,7 +191,7 @@ a batch.
 The configured batch sizes are:
 
 ```text
-1, 8, 16, 32, 64, 128
+1, 8, 16, 32, 64, 100
 ```
 
 For batched execution, total call latency and per-flow timing can be
