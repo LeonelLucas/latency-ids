@@ -712,6 +712,47 @@ analysis should be written.
 If an explicit output directory is not supplied, the wrapper creates a
 timestamped cross-host analysis directory.
 
+### Automatically identifying the two runs
+
+After the new definitive experiment has completed, the repository should
+contain two complete `multidataset-run-*` directories: the reference run
+and the newly generated run.
+
+The following commands identify both directories automatically:
+
+```bash
+mapfile -t RUNS < <(
+    find . -maxdepth 1 -type d -name 'multidataset-run-*' \
+        -printf '%f\n' | sort
+)
+
+if [ "${#RUNS[@]}" -ne 2 ]; then
+    echo "ERROR: expected exactly two multidataset run directories."
+    printf 'Found: %s\n' "${RUNS[@]}"
+    exit 1
+fi
+
+HOST_A="${RUNS[0]}"
+HOST_B="${RUNS[1]}"
+
+echo "Host A: $HOST_A"
+echo "Host B: $HOST_B"
+```
+
+The comparison can then be executed without manually copying either
+timestamp:
+
+```bash
+./compare_two_hosts.sh \
+    "$HOST_A" \
+    "$HOST_B" \
+    cross-host-analysis-host-a-vs-host-b
+```
+
+The commands intentionally require exactly two run directories. If more
+or fewer runs are present, the procedure stops instead of silently
+selecting the wrong pair.
+
 ---
 
 ## Cross-Host Validation
