@@ -43,3 +43,7 @@ documentation-*.txt
 
 # Local experiment console captures
 definitive-*-console.log
+
+# Preserve the definitive Host 1 run used for cross-host comparison.
+!multidataset-run-20260930T225117Z/
+!multidataset-run-20260930T225117Z/**

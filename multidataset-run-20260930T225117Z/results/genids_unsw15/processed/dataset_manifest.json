@@ -1,0 +1,136 @@
+{
+  "seed": 20260719,
+  "dataset": "GenIDS-UNSW15",
+  "source_file": "/data/genids/GenIDS-UNSW15.csv",
+  "source_sha256": "2437a5fb6ae6f37d47e24e2fc4ee2df243248679f412a0f3dd1ffd7e757ddb1e",
+  "split_mode": "days",
+  "splits": {
+    "train": {
+      "days": {
+        "2015-01-22": {
+          "rows": 38971,
+          "finite_rows": 38971,
+          "effective_benign": 30636,
+          "effective_malicious": 8335
+        }
+      },
+      "selected_rows": 38971,
+      "selected_benign": 30636,
+      "selected_malicious": 8335
+    },
+    "validation": {
+      "days": {
+        "2015-01-23": {
+          "rows": 285796,
+          "finite_rows": 285796,
+          "effective_benign": 281357,
+          "effective_malicious": 4439
+        }
+      },
+      "selected_rows": 29439,
+      "selected_benign": 25000,
+      "selected_malicious": 4439
+    },
+    "test": {
+      "days": {
+        "2015-02-18": {
+          "rows": 354928,
+          "finite_rows": 354928,
+          "effective_benign": 287352,
+          "effective_malicious": 67576
+        }
+      },
+      "selected_rows": 167576,
+      "selected_benign": 100000,
+      "selected_malicious": 67576
+    }
+  },
+  "features": [
+    "src_port",
+    "dst_port",
+    "protocol",
+    "ip_version",
+    "vlan_id",
+    "tunnel_id",
+    "bidirectional_duration_ms",
+    "bidirectional_packets",
+    "bidirectional_bytes",
+    "src2dst_duration_ms",
+    "src2dst_packets",
+    "src2dst_bytes",
+    "dst2src_duration_ms",
+    "dst2src_packets",
+    "dst2src_bytes",
+    "bidirectional_min_ps",
+    "bidirectional_mean_ps",
+    "bidirectional_stddev_ps",
+    "bidirectional_max_ps",
+    "src2dst_min_ps",
+    "src2dst_mean_ps",
+    "src2dst_stddev_ps",
+    "src2dst_max_ps",
+    "dst2src_min_ps",
+    "dst2src_mean_ps",
+    "dst2src_stddev_ps",
+    "dst2src_max_ps",
+    "bidirectional_min_piat_ms",
+    "bidirectional_mean_piat_ms",
+    "bidirectional_stddev_piat_ms",
+    "bidirectional_max_piat_ms",
+    "src2dst_min_piat_ms",
+    "src2dst_mean_piat_ms",
+    "src2dst_stddev_piat_ms",
+    "src2dst_max_piat_ms",
+    "dst2src_min_piat_ms",
+    "dst2src_mean_piat_ms",
+    "dst2src_stddev_piat_ms",
+    "dst2src_max_piat_ms",
+    "bidirectional_syn_packets",
+    "bidirectional_cwr_packets",
+    "bidirectional_ece_packets",
+    "bidirectional_urg_packets",
+    "bidirectional_ack_packets",
+    "bidirectional_psh_packets",
+    "bidirectional_rst_packets",
+    "bidirectional_fin_packets",
+    "src2dst_syn_packets",
+    "src2dst_cwr_packets",
+    "src2dst_ece_packets",
+    "src2dst_urg_packets",
+    "src2dst_ack_packets",
+    "src2dst_psh_packets",
+    "src2dst_rst_packets",
+    "src2dst_fin_packets",
+    "dst2src_syn_packets",
+    "dst2src_cwr_packets",
+    "dst2src_ece_packets",
+    "dst2src_urg_packets",
+    "dst2src_ack_packets",
+    "dst2src_psh_packets",
+    "dst2src_rst_packets",
+    "dst2src_fin_packets"
+  ],
+  "excluded_columns": [
+    "expiration_id",
+    "src_ip",
+    "src_mac",
+    "src_oui",
+    "dst_ip",
+    "dst_mac",
+    "dst_oui",
+    "bidirectional_first_seen_ms",
+    "bidirectional_last_seen_ms",
+    "src2dst_first_seen_ms",
+    "src2dst_last_seen_ms",
+    "dst2src_first_seen_ms",
+    "dst2src_last_seen_ms",
+    "application_name",
+    "application_category_name",
+    "application_is_guessed",
+    "application_confidence",
+    "date",
+    "hours",
+    "binary",
+    "multiclass"
+  ]
+}

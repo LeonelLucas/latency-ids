@@ -1,0 +1,85 @@
+[
+    {
+        "Id": "sha256:6ae088f7d13af0ba88fe4207a603eac5e21254ee64891c16bb8f665d5bfb85b1",
+        "RepoTags": [
+            "latency-ids-multidataset:20260930T225117Z"
+        ],
+        "RepoDigests": [],
+        "Parent": "sha256:27db8ef0320f4ae176ff12a9a2caf60d23028aea584f191ead21f242607e9b5b",
+        "Comment": "",
+        "Created": "2026-09-30T23:00:33.697042666Z",
+        "DockerVersion": "26.1.3",
+        "Author": "",
+        "Config": {
+            "Hostname": "",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+                "PYTHON_VERSION=3.12.8",
+                "PYTHON_SHA256=c909157bb25ec114e5869124cc2a9c4a4d4c1e957ca4ff553f1edc692101154e",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "PYTHONUNBUFFERED=1",
+                "OMP_NUM_THREADS=1",
+                "OPENBLAS_NUM_THREADS=1",
+                "MKL_NUM_THREADS=1",
+                "VECLIB_MAXIMUM_THREADS=1",
+                "NUMEXPR_NUM_THREADS=1",
+                "MPLCONFIGDIR=/tmp/matplotlib"
+            ],
+            "Cmd": [
+                "all",
+                "--config",
+                "configs/smoke.yaml"
+            ],
+            "Image": "sha256:27db8ef0320f4ae176ff12a9a2caf60d23028aea584f191ead21f242607e9b5b",
+            "Volumes": null,
+            "WorkingDir": "/artifact",
+            "Entrypoint": [
+                "python",
+                "-m",
+                "latency_artifact"
+            ],
+            "OnBuild": null,
+            "Labels": null
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 576964365,
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/5bbf90b8a3c6b5943a54b507225e5372aa803252cb06c284e61d09f603e3fd9c/diff:/var/lib/docker/overlay2/97468c80d9136213f42396788b8288f92395b0f700b0375cc4559b47aff6b83d/diff:/var/lib/docker/overlay2/5193a033ba4656e8f0b4911132536c8579e7ad3713797ebc7e20a7a6a42cd3fb/diff:/var/lib/docker/overlay2/bf01c1b0d7a1222a18729a8f0906b01a3d213efb8a9c9c6ca70d97f88e7f3ea8/diff:/var/lib/docker/overlay2/d37177ab74abdc23f88a962732158ed2042112887ffe7a3ebddb3a86daaf84ea/diff:/var/lib/docker/overlay2/5cc2e282dd6774d4c8f21bd1379d2fe88f760933797b8d65252325f3507d58b4/diff:/var/lib/docker/overlay2/1ef3014afc6000afbd16f2018de522e7fe8d0238e7d370386e348980f366fa1f/diff:/var/lib/docker/overlay2/8270fab9dc84e825122e59fc7e168ea31abd204afdb97c1d8140ec2284c87fb5/diff:/var/lib/docker/overlay2/50fc6d117b869103d1d5fae80f43b4f1d458e0d500d86c7c171a0040f1cab5dc/diff",
+                "MergedDir": "/var/lib/docker/overlay2/3a670648874785103d725fdd19bfee91e3ed053c97d10e6cfbf420339990c8e8/merged",
+                "UpperDir": "/var/lib/docker/overlay2/3a670648874785103d725fdd19bfee91e3ed053c97d10e6cfbf420339990c8e8/diff",
+                "WorkDir": "/var/lib/docker/overlay2/3a670648874785103d725fdd19bfee91e3ed053c97d10e6cfbf420339990c8e8/work"
+            },
+            "Name": "overlay2"
+        },
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:7914c8f600f532b7adbd0b003888e3aa921687d62dbe2f1f829d0ab6234a158a",
+                "sha256:46cd1391c75e48c6efe37a2cef3e3e267b0dd5f0c7dd370440b9bf22861bb208",
+                "sha256:e6c4c63db83312c93d00e0e6e03ae1392b27d8a93a9270a425a95603ed3170ab",
+                "sha256:cc193c810c6eab0be16f4e0ab33f34d93469b9e3040c0b43ec8477905da24f6a",
+                "sha256:580813a43f266161c5a2e7beb3a60e95761b3a7d66f9d2a3dc7dc8dbfca567e1",
+                "sha256:38ebf5e9811b8396d75a33ce1a01c0c232d38a13c79248e7f670c8b802cc287d",
+                "sha256:1d21a7773d207a0e4d84af250276f2e64fff10d6840fcfcb13c63f18ec7de62b",
+                "sha256:0d2dbd4d35a43ddd471646dc0c98b06129673bc90a4b65c9166efde01a8ff7f6",
+                "sha256:2bd9500db7ae2dac5da649e909ffea4fdd372667e6b355a0d5dfc26e05afb29c",
+                "sha256:ea57b98683a91ed263505cc7930985c27b64689597ef28975165fcf606ab191c"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "2026-09-30T20:00:33.763412155-03:00"
+        }
+    }
+]

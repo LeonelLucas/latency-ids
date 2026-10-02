@@ -1,0 +1,2 @@
+pid 2107766's current affinity list: 0-3
+pid 2107766's new affinity list: 0

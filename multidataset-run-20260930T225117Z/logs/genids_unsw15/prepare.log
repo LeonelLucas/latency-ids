@@ -1,0 +1,17 @@
+Dataset: /data/genids/GenIDS-UNSW15.csv
+Feature count: 63
+Split mode: days
+Temporal split:
+  train: ['2015-01-22']
+  validation: ['2015-01-23']
+  test: ['2015-02-18']
+Reading /data/genids/GenIDS-UNSW15.csv in chunks of 100,000 rows...
+Finished reading 679,695 rows.
+train: X=(38971, 63) benign=30,636 malicious=8,335
+validation: X=(29439, 63) benign=25,000 malicious=4,439
+test: X=(167576, 63) benign=100,000 malicious=67,576
+
+GenIDS preparation completed.
+Dataset: /artifact/results/genids_unsw15/processed/dataset.npz
+Manifest: /artifact/results/genids_unsw15/processed/dataset_manifest.json
+Features: 63

@@ -1,0 +1,2 @@
+pid 2002636's current affinity list: 0-3
+pid 2002636's new affinity list: 0

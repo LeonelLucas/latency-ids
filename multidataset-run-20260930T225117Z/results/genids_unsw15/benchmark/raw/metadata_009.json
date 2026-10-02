@@ -1,0 +1,48 @@
+{
+  "run_id": 9,
+  "timestamp": "2026-09-30T23:32:43+0000",
+  "platform": "Linux-5.4.0-216-generic-x86_64-with-glibc2.36",
+  "machine": "x86_64",
+  "python": "3.12.8",
+  "numpy": "2.0.2",
+  "pandas": "2.2.3",
+  "scipy": "1.14.1",
+  "scikit_learn": "1.5.2",
+  "cpu_count": 4,
+  "cpu_affinity": [
+    3
+  ],
+  "one_cpu_affinity": true,
+  "threadpool_info": [
+    {
+      "user_api": "blas",
+      "internal_api": "openblas",
+      "num_threads": 1,
+      "prefix": "libscipy_openblas",
+      "filepath": "/usr/local/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-99b71e71.so",
+      "version": "0.3.27",
+      "threading_layer": "pthreads",
+      "architecture": "Haswell"
+    },
+    {
+      "user_api": "blas",
+      "internal_api": "openblas",
+      "num_threads": 1,
+      "prefix": "libscipy_openblas",
+      "filepath": "/usr/local/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-c128ec02.so",
+      "version": "0.3.27.dev",
+      "threading_layer": "pthreads",
+      "architecture": "Haswell"
+    },
+    {
+      "user_api": "openmp",
+      "internal_api": "openmp",
+      "num_threads": 1,
+      "prefix": "libgomp",
+      "filepath": "/usr/local/lib/python3.12/site-packages/scikit_learn.libs/libgomp-a34b3233.so.1.0.0",
+      "version": null
+    }
+  ],
+  "docker": true,
+  "config": "/artifact/configs/genids_unsw15.yaml"
+}

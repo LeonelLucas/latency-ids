@@ -1,0 +1,25 @@
+{
+  "models": [
+    "LoR",
+    "SGD",
+    "NB",
+    "DT",
+    "RF",
+    "GB",
+    "AB",
+    "MLP"
+  ],
+  "score_methods": {
+    "LoR": "predict_proba_positive_class",
+    "SGD": "predict_proba_positive_class",
+    "NB": "predict_proba_positive_class",
+    "DT": "predict_proba_positive_class",
+    "RF": "predict_proba_positive_class",
+    "GB": "predict_proba_positive_class",
+    "AB": "predict_proba_positive_class",
+    "MLP": "predict_proba_positive_class"
+  },
+  "validation_rows": 29699,
+  "test_rows": 200000,
+  "selection_rule": "Select thresholds on validation only; evaluate the frozen thresholds on test."
+}

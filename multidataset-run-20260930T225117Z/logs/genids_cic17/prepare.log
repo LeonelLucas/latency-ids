@@ -1,0 +1,21 @@
+Dataset: /data/genids/GenIDS-CIC17.csv
+Feature count: 63
+Split mode: days
+Temporal split:
+  train: ['2017-07-03', '2017-07-04', '2017-07-05']
+  validation: ['2017-07-06']
+  test: ['2017-07-07']
+Reading /data/genids/GenIDS-CIC17.csv in chunks of 100,000 rows...
+  chunks=10 rows=1,000,000
+  chunks=20 rows=2,000,000
+  chunks=30 rows=3,000,000
+  chunks=40 rows=3,987,448
+Finished reading 3,987,448 rows.
+train: X=(200000, 63) benign=100,000 malicious=100,000
+validation: X=(29699, 63) benign=25,000 malicious=4,699
+test: X=(200000, 63) benign=100,000 malicious=100,000
+
+GenIDS preparation completed.
+Dataset: /artifact/results/genids_cic17/processed/dataset.npz
+Manifest: /artifact/results/genids_cic17/processed/dataset_manifest.json
+Features: 63
