@@ -1,0 +1,18 @@
+Dataset: /data/genids/GenIDS-CIC18.csv
+Feature count: 63
+Split mode: temporal_percentage
+Temporal percentage split: train=0-40.00%, validation=40.00%-48.00%, test=48.00%-100%
+Reading temporal order column: bidirectional_first_seen_ms
+Reading /data/genids/GenIDS-CIC18.csv in chunks of 100,000 rows...
+  chunks=10 rows=1,000,000
+  chunks=20 rows=2,000,000
+  chunks=30 rows=3,000,000
+  chunks=40 rows=4,000,000
+train: X=(200000, 63) benign=100,000 malicious=100,000
+validation: X=(50000, 63) benign=25,000 malicious=25,000
+test: X=(200000, 63) benign=100,000 malicious=100,000
+
+GenIDS preparation completed.
+Dataset: /artifact/results/genids_cic18/processed/dataset.npz
+Manifest: /artifact/results/genids_cic18/processed/dataset_manifest.json
+Features: 63

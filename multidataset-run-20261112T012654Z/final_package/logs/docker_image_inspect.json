@@ -1,0 +1,86 @@
+[
+    {
+        "Architecture": "amd64",
+        "Author": "",
+        "Comment": "",
+        "Config": {
+            "AttachStderr": false,
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "Cmd": [
+                "all",
+                "--config",
+                "configs/smoke.yaml"
+            ],
+            "Domainname": "",
+            "Entrypoint": [
+                "python",
+                "-m",
+                "latency_artifact"
+            ],
+            "Env": [
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+                "PYTHON_VERSION=3.12.8",
+                "PYTHON_SHA256=c909157bb25ec114e5869124cc2a9c4a4d4c1e957ca4ff553f1edc692101154e",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "PYTHONUNBUFFERED=1",
+                "OMP_NUM_THREADS=1",
+                "OPENBLAS_NUM_THREADS=1",
+                "MKL_NUM_THREADS=1",
+                "VECLIB_MAXIMUM_THREADS=1",
+                "NUMEXPR_NUM_THREADS=1",
+                "MPLCONFIGDIR=/tmp/matplotlib"
+            ],
+            "Hostname": "",
+            "Image": "",
+            "Labels": null,
+            "OnBuild": null,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Tty": false,
+            "User": "",
+            "Volumes": null,
+            "WorkingDir": "/artifact"
+        },
+        "Created": "2026-11-12T01:22:57.745528098Z",
+        "DockerVersion": "",
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/snap/docker/common/var-lib-docker/overlay2/d54f31c8e59301d004faeb5dd5b836be510bd224c8d50517fdce7a838c3f9032/diff:/var/snap/docker/common/var-lib-docker/overlay2/b494d7ff6cecc3aa4d2a61fa0a8140044afebec4bc141b2c831e24d6e6539a7f/diff:/var/snap/docker/common/var-lib-docker/overlay2/259f5f2c1ef6898420ecb6589d5f458f62af862ef96bb0abb0ffad7ef1cdd661/diff:/var/snap/docker/common/var-lib-docker/overlay2/812524ab73b46bc91b5a6b47fe5379ee3b484de21e5e28e5c7875d2c84bd0328/diff:/var/snap/docker/common/var-lib-docker/overlay2/4e55f5fc023e8aa5ecef08f97316d119bf8aaa1fd5e2e7a4e538e2d9314ef3b1/diff:/var/snap/docker/common/var-lib-docker/overlay2/65178cc0a8471838dd13422dcc03394ad5809357d2d87dcbe4137d2a2b959dfb/diff:/var/snap/docker/common/var-lib-docker/overlay2/166da6d38969898a1e2413e72708f0728ed0fa0b69f78611ca6b1b4e12f428b3/diff:/var/snap/docker/common/var-lib-docker/overlay2/bb2d6cf45f32f1b38c96147a3f77828f1f7f2843bfb57d53b34e4d1115d15daa/diff:/var/snap/docker/common/var-lib-docker/overlay2/00829c2932ececb618c859186b95ad82fe0a7fd38128f082367b7190389b3a81/diff",
+                "MergedDir": "/var/snap/docker/common/var-lib-docker/overlay2/24d6405b4f8ca33d8b4be10ada032a8636c6b0a43378b6f95860d8498fc7fe14/merged",
+                "UpperDir": "/var/snap/docker/common/var-lib-docker/overlay2/24d6405b4f8ca33d8b4be10ada032a8636c6b0a43378b6f95860d8498fc7fe14/diff",
+                "WorkDir": "/var/snap/docker/common/var-lib-docker/overlay2/24d6405b4f8ca33d8b4be10ada032a8636c6b0a43378b6f95860d8498fc7fe14/work"
+            },
+            "Name": "overlay2"
+        },
+        "Id": "sha256:9da5cf9fa76f64b863ee56314de5085c0786ca4ef2bcbf93551cca0afc6c5da0",
+        "Metadata": {
+            "LastTagTime": "2026-11-11T22:27:39.842371334-03:00"
+        },
+        "Os": "linux",
+        "Parent": "sha256:63f707632fb466ff5818b882afd09e0efc2e51f195bfbf11a8181ea03ee0e899",
+        "RepoDigests": [],
+        "RepoTags": [
+            "latency-ids-multidataset:20261112T011345Z",
+            "latency-ids-multidataset:20261112T012654Z"
+        ],
+        "RootFS": {
+            "Layers": [
+                "sha256:7914c8f600f532b7adbd0b003888e3aa921687d62dbe2f1f829d0ab6234a158a",
+                "sha256:46cd1391c75e48c6efe37a2cef3e3e267b0dd5f0c7dd370440b9bf22861bb208",
+                "sha256:e6c4c63db83312c93d00e0e6e03ae1392b27d8a93a9270a425a95603ed3170ab",
+                "sha256:cc193c810c6eab0be16f4e0ab33f34d93469b9e3040c0b43ec8477905da24f6a",
+                "sha256:58f8b4a9b15ecd485479d4ff5446bcc73a5afbdc197e8fc22c5afe537f696f3b",
+                "sha256:553bb88b743db194162cee9830f5e1c0a2a10f63c9cadaa6ac1e88e6f105ef92",
+                "sha256:e444b971e65cffcb183dc537cd95ed7cab0e66958eecee9006fd6f07ca86875b",
+                "sha256:87c7a362fbf9e634c4be0327af346317d08d8333bc22e4201ac68e13ec1f2caf",
+                "sha256:bc8b6c34632f73af91791f3aa3c5d8fd1408b1b99f3a9cf872bf54d4b628e69c",
+                "sha256:bbb90a241c275234c0d1c5301de52e2c9e4611545e8abd9634379213d0def96b"
+            ],
+            "Type": "layers"
+        },
+        "Size": 576907169
+    }
+]

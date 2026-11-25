@@ -1,0 +1,35 @@
+seed: 20260719
+
+paths:
+  data_dir: ${LATENCY_DATA_DIR}
+  output_dir: ${LATENCY_OUTPUT_DIR}
+
+data:
+  # Days are disjoint to reduce temporal and near-duplicate leakage.
+  splits:
+    train:
+      days: [monday.csv, tuesday.csv, wednesday.csv]
+      max_per_class: 100000
+    validation:
+      days: [thursday.csv]
+      max_per_class: 25000
+    test:
+      days: [friday.csv]
+      max_per_class: 100000
+
+models: [LoR, SGD, NB, DT, RF, GB, AB, MLP]
+
+evaluation:
+  malicious_fractions: [0.01, 0.05, 0.1, 0.5]
+  max_samples: 100000
+
+benchmark:
+  batch_sizes: [1, 8, 16, 32, 64, 100]
+  malicious_fractions: [0.0, 0.01, 0.05, 0.1, 0.5, 1.0]
+  repetitions: 30
+  # Runs are sequential and each is a new OS process. They are the independent
+  # units in the confirmatory class-effect test.
+  # Twelve runs give the exact two-sided sign-flip test enough p-value
+  # resolution for BH correction across 48 model-by-batch comparisons.
+  process_runs: 12
+  warmup: 20

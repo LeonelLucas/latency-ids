@@ -1,0 +1,2 @@
+pid 30198's current affinity list: 0-7
+pid 30198's new affinity list: 0

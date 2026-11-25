@@ -1,0 +1,121 @@
+runner_version=2026-09-26.1
+dataset=cicids2017
+selected_cpu=7
+run_root=/home/lleonel/dissertacaoLucasLeonel/latency-ids/multidataset-run-20261112T012654Z
+max_load1=0.50
+2026-11-11T22:43:48-03:00
+Linux cartman 5.4.0-216-generic #236-Ubuntu SMP Fri Apr 11 19:53:21 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+
+lscpu
+Architecture:                       x86_64
+CPU op-mode(s):                     32-bit, 64-bit
+Byte Order:                         Little Endian
+Address sizes:                      36 bits physical, 48 bits virtual
+CPU(s):                             8
+On-line CPU(s) list:                0-7
+Thread(s) per core:                 2
+Core(s) per socket:                 4
+Socket(s):                          1
+NUMA node(s):                       1
+Vendor ID:                          GenuineIntel
+CPU family:                         6
+Model:                              58
+Model name:                         Intel(R) Core(TM) i7-3770 CPU @ 3.40GHz
+Stepping:                           9
+CPU MHz:                            2103.066
+CPU max MHz:                        3900.0000
+CPU min MHz:                        1600.0000
+BogoMIPS:                           6784.41
+Virtualization:                     VT-x
+L1d cache:                          128 KiB
+L1i cache:                          128 KiB
+L2 cache:                           1 MiB
+L3 cache:                           8 MiB
+NUMA node0 CPU(s):                  0-7
+Vulnerability Gather data sampling: Not affected
+Vulnerability Itlb multihit:        KVM: Mitigation: Split huge pages
+Vulnerability L1tf:                 Mitigation; PTE Inversion; VMX conditional cache flushes, SMT vulnerable
+Vulnerability Mds:                  Mitigation; Clear CPU buffers; SMT vulnerable
+Vulnerability Meltdown:             Mitigation; PTI
+Vulnerability Mmio stale data:      Unknown: No mitigations
+Vulnerability Retbleed:             Not affected
+Vulnerability Spec store bypass:    Mitigation; Speculative Store Bypass disabled via prctl and seccomp
+Vulnerability Spectre v1:           Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:           Mitigation; Retpolines; IBPB conditional; IBRS_FW; STIBP conditional; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
+Vulnerability Srbds:                Vulnerable: No microcode
+Vulnerability Tsx async abort:      Not affected
+Flags:                              fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm cpuid_fault epb pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms xsaveopt dtherm ida arat pln pts md_clear flush_l1d
+
+nproc
+8
+8
+
+/proc/loadavg
+1.01 0.98 0.75 1/918 27230
+
+free
+              total        used        free      shared  buff/cache   available
+Mem:           15Gi       920Mi       1.9Gi        23Mi        12Gi        14Gi
+Swap:         4.0Gi       424Mi       3.6Gi
+
+selected_cpu_governor
+performance
+
+uptime
+ 22:43:48 up 7 days, 40 min,  2 users,  load average: 1.01, 0.98, 0.75
+
+top_cpu_processes
+    PID PSR %CPU %MEM COMMAND
+   4288   1  2.4  0.5 cuckoo
+   3181   1  2.2  0.5 python
+   2295   4  0.5  0.5 cuckoo
+   1232   0  0.4  0.4 mysqld
+    908   1  0.2  0.3 mongod
+      1   6  0.0  0.0 systemd
+      2   5  0.0  0.0 kthreadd
+      3   0  0.0  0.0 rcu_gp
+      4   0  0.0  0.0 rcu_par_gp
+      6   0  0.0  0.0 kworker/0:0H-kblockd
+      8   0  0.0  0.0 mm_percpu_wq
+      9   0  0.0  0.0 ksoftirqd/0
+     10   5  0.0  0.0 rcu_sched
+     11   0  0.0  0.0 migration/0
+     12   0  0.0  0.0 idle_inject/0
+     14   0  0.0  0.0 cpuhp/0
+     15   1  0.0  0.0 cpuhp/1
+     16   1  0.0  0.0 idle_inject/1
+     17   1  0.0  0.0 migration/1
+     18   1  0.0  0.0 ksoftirqd/1
+     20   1  0.0  0.0 kworker/1:0H-events_highpri
+     21   2  0.0  0.0 cpuhp/2
+     22   2  0.0  0.0 idle_inject/2
+     23   2  0.0  0.0 migration/2
+
+docker_version
+Client:
+ Version:           26.1.3
+ API version:       1.45
+ Go version:        go1.22.2
+ Git commit:        26.1.3-0ubuntu1~20.04.1
+ Built:             Mon Oct 14 22:06:01 2024
+ OS/Arch:           linux/amd64
+ Context:           default
+
+Server:
+ Engine:
+  Version:          29.8.0
+  API version:      1.56 (minimum version 1.40)
+  Go version:       go1.26.8
+  Git commit:       3ce5872
+  Built:            Wed Sep 23 15:26:53 2026
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v2.3.4
+  GitCommit:        db8809540e1a7a9da5d518876894933ff55692ab
+ runc:
+  Version:          1.5.1
+  GitCommit:        
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0

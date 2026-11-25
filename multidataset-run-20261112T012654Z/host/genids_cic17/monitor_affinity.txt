@@ -1,0 +1,2 @@
+pid 27894's current affinity list: 0-7
+pid 27894's new affinity list: 0

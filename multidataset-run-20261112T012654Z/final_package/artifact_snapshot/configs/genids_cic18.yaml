@@ -1,0 +1,82 @@
+seed: 20260719
+
+paths:
+  data_file: ${GENIDS_DATA_FILE}
+  output_dir: ${LATENCY_OUTPUT_DIR}
+
+genids:
+  name: GenIDS-CIC18
+
+  label_column: binary
+  benign_label: benign
+  malicious_label: malign
+
+  chunksize: 100000
+
+  # Features numéricas restantes após remover identificadores,
+  # timestamps absolutos, metadados de aplicação e labels.
+  #
+  # Mantemos portas, protocolo, versão IP, VLAN e tunnel ID,
+  # seguindo a política do experimento original: não realizar
+  # seleção adicional de features apenas por ausência de variância.
+  expected_feature_count: 63
+
+  exclude_columns:
+    # Identificadores de origem/destino
+    - src_ip
+    - src_mac
+    - src_oui
+    - dst_ip
+    - dst_mac
+    - dst_oui
+
+    # Timestamps absolutos
+    # first_seen é usado somente para ordenação temporal,
+    # nunca como entrada do modelo.
+    - bidirectional_first_seen_ms
+    - bidirectional_last_seen_ms
+    - src2dst_first_seen_ms
+    - src2dst_last_seen_ms
+    - dst2src_first_seen_ms
+    - dst2src_last_seen_ms
+
+    # Metadados de aplicação
+    - application_name
+    - application_category_name
+    - application_is_guessed
+    - application_confidence
+
+    # Labels
+    - binary
+    - multiclass
+
+data:
+  split_mode: temporal_percentage
+
+  temporal:
+    order_column: bidirectional_first_seen_ms
+    train_end: 0.40
+    validation_end: 0.48
+
+  splits:
+    train:
+      max_per_class: 100000
+
+    validation:
+      max_per_class: 25000
+
+    test:
+      max_per_class: 100000
+
+models: [LoR, SGD, NB, DT, RF, GB, AB, MLP]
+
+evaluation:
+  malicious_fractions: [0.01, 0.05, 0.1, 0.5]
+  max_samples: 100000
+
+benchmark:
+  batch_sizes: [1, 8, 16, 32, 64, 100]
+  malicious_fractions: [0.0, 0.01, 0.05, 0.1, 0.5, 1.0]
+  repetitions: 30
+  process_runs: 12
+  warmup: 20
