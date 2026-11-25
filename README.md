@@ -14,7 +14,7 @@
   <code>6 batch sizes</code> ·
   <code>6 traffic compositions</code> ·
   <code>12 independent processes</code> ·
-  <code>3 physical hosts</code>
+  <code>2 physical hosts</code>
 </p>
 
 ---
@@ -34,7 +34,7 @@ for a controlled multi-dataset evaluation of these aspects.
 The definitive experiment evaluates four network intrusion datasets,
 eight machine learning models, multiple batch sizes and traffic
 compositions, repeated measurements across independent processes, and
-replication on three physical Linux hosts.
+replication on two physical Linux hosts.
 
 The workflow separates dataset preparation, model training, definitive
 timing measurements, dataset-level analysis, result packaging, and
@@ -56,7 +56,7 @@ protocol across all four datasets.
 | Repetitions | 30 |
 | Independent processes | 12 |
 | Warm-up iterations | 20 |
-| Physical hosts | 3 |
+| Physical hosts | 2 |
 
 The combination of model, batch size, and requested malicious fraction
 defines the experimental conditions evaluated by the timing pipeline.
@@ -65,7 +65,7 @@ Each condition is measured repeatedly, and the definitive protocol uses
 independent processes to reduce dependence on the state of a single
 long-running Python process.
 
-The complete four-dataset experiment is independently replicated on three
+The complete four-dataset experiment is independently replicated on two
 physical Linux hosts.
 
 The resulting definitive experimental scale is summarized below.
@@ -79,12 +79,12 @@ The resulting definitive experimental scale is summarized below.
 | Repetitions | 30 |
 | Independent processes | 12 |
 | Warm-up iterations | 20 |
-| Physical hosts | 3 |
+| Physical hosts | 2 |
 | Conditions per dataset | 288 |
 | Raw benchmark observations per dataset and host | 103,680 |
 | Raw benchmark observations per host | 414,720 |
-| Raw benchmark observations across three hosts | 1,244,160 |
-| Cross-host matched conditions per dataset and host pair | 288 |
+| Raw benchmark observations across two hosts | 829,440 |
+| Cross-host matched conditions per dataset | 288 |
 
 ---
 
@@ -125,14 +125,6 @@ and is associated with the CICIDS2018 scenario.
 It is prepared using its corresponding dataset-specific pipeline and is
 then evaluated under the same definitive timing methodology used for the
 other datasets.
-
-On the Raspberry Pi, memory constraints require the deterministic V2
-subset of GenIDS-CIC18, available in the
-[dataset release](https://github.com/LeonelLucas/latency-ids/releases/tag/raspberry-datasets-v1.0).
-The [original GenIDS dataset](https://doi.org/10.5281/zenodo.21435638)
-is the source of this subset. The timing design is preserved, but the
-input data differ from the full-dataset executions; comparisons involving
-this subset must account for that distinction.
 
 ### Common multi-dataset workflow
 
@@ -341,20 +333,22 @@ The default configured cooldown interval is:
 
 ---
 
-## Three-Host Replication
+## Two-Host Replication
 
-The evaluation comprises three independent physical Linux hosts:
+The complete four-dataset experiment is independently executed on two
+physical Linux hosts.
 
-| Host | Architecture | Platform |
-|---|---|---|
-| Morty | x86-64 | Linux |
-| Cartman | x86-64 | Linux |
-| Raspberry Pi | ARM64 | Raspberry Pi 3 Model B |
+Each host performs the complete experiment and produces its own timing
+results, host metadata, monitoring information, logs, and packaged
+artifacts.
 
-Each host evaluates all four datasets under the common timing design and
-preserves its own results, metadata, monitoring information, and logs.
-The Raspberry Pi uses the GenIDS-CIC18 V2 subset described above.
-Absolute latency may differ across hardware and execution environments.
+The hosts are not expected to exhibit identical absolute latency.
+Differences in processor characteristics and system environments can
+produce different absolute execution times.
+
+The cross-host analysis therefore evaluates both absolute timing
+differences and the consistency of experimental behavior across the two
+independent physical environments.
 
 ---
 
@@ -363,15 +357,15 @@ Absolute latency may differ across hardware and execution environments.
 Cross-host analysis is deliberately separated from benchmark execution.
 
 Each definitive host execution produces and preserves its own results.
-After the selected host executions are complete, the cross-host analysis
-is invoked manually for each host pair.
+After complete executions from both physical hosts are available, the
+cross-host analysis is invoked manually.
 
 This separation keeps measurement generation distinct from subsequent
 comparative analysis.
 
 ### Matched Experimental Conditions
 
-Equivalent conditions within each host pair are matched using the experimental
+Equivalent conditions from both hosts are matched using the experimental
 configuration.
 
 The comparison considers the same:
@@ -396,7 +390,7 @@ x 6 requested malicious fractions
 Across four datasets, this corresponds to:
 
 ```text
-288 x 4 = 1,152 matched conditions per host pair
+288 x 4 = 1,152 matched cross-host conditions
 ```
 
 ---
@@ -481,7 +475,8 @@ Validate outputs
 Create final package
 ```
 
-The definitive runner does not automatically perform cross-host comparison.
+The definitive runner does not automatically perform the two-host
+comparison.
 
 The experiment should be executed from the repository root using the
 frozen experimental version documented for the corresponding run.
@@ -490,26 +485,6 @@ A definitive execution should be allowed to complete without modifying
 the experimental code or configuration during the run.
 
 Each physical host performs its own independent complete execution.
-
-### Individual Dataset Runners for Raspberry Pi
-
-The scripts in `runners_raspberry/` allow each dataset to be executed
-independently, including automatic dataset acquisition, integrity
-verification, preparation, training, benchmarking, analysis, and validation.
-From the repository root, select the desired command:
-
-```bash
-bash runners_raspberry/run_cicids2017.sh
-bash runners_raspberry/run_genids_cic17.sh
-bash runners_raspberry/run_genids_unsw15.sh
-bash runners_raspberry/run_genids_cic18.sh
-```
-
-The runners require ARM64 Linux, Docker with the `latency-ids:raspberry-pi`
-image, adequate swap, stable power, cooling, and the `performance` CPU
-governor. Benchmark execution uses CPU 3 and one computational thread.
-The original Raspberry Pi runs were completed and validated; the later
-automated runners have not been fully re-executed end to end.
 
 ## Output Organization
 
@@ -665,11 +640,36 @@ the preserved artifact contents to be checked for integrity.
 
 ---
 
-## Running on Three Physical Hosts
+## Running on Two Physical Hosts
 
-Execute the multi-dataset runner on each x86-64 host and the individual
-dataset runners on Raspberry Pi. Preserve the original run directories
-independently before performing the pairwise comparisons below.
+The replication procedure is conceptually:
+
+```text
+                     Frozen experiment
+                            |
+                +-----------+-----------+
+                |                       |
+                v                       v
+        Physical Host A         Physical Host B
+                |                       |
+                v                       v
+       Complete 4-dataset      Complete 4-dataset
+           execution               execution
+                |                       |
+                v                       v
+        Host A artifacts        Host B artifacts
+                |                       |
+                +-----------+-----------+
+                            |
+                            v
+                 Post-hoc cross-host
+                      comparison
+```
+
+The same experimental methodology is used on both hosts.
+
+The two host executions remain independent. Their result directories are
+compared only after the definitive executions have been completed.
 
 ---
 
@@ -712,23 +712,46 @@ analysis should be written.
 If an explicit output directory is not supplied, the wrapper creates a
 timestamped cross-host analysis directory.
 
-### Comparing the Three Hosts
+### Automatically identifying the two runs
 
-The wrapper operates on two hosts at a time. Assign the actual complete
-run directories using their host metadata, rather than timestamp order:
+After the new definitive experiment has completed, the repository should
+contain two complete `multidataset-run-*` directories: the reference run
+and the newly generated run.
+
+The following commands identify both directories automatically:
 
 ```bash
-MORTY="/path/to/morty-run"
-CARTMAN="/path/to/cartman-run"
-RASPBERRY="/path/to/raspberry-run"
+mapfile -t RUNS < <(
+    find . -maxdepth 1 -type d -name 'multidataset-run-*' \
+        -printf '%f\n' | sort
+)
 
-./compare_two_hosts.sh "$MORTY" "$CARTMAN" cross-host-analysis-morty-vs-cartman
-./compare_two_hosts.sh "$MORTY" "$RASPBERRY" cross-host-analysis-morty-vs-raspberry
-./compare_two_hosts.sh "$CARTMAN" "$RASPBERRY" cross-host-analysis-cartman-vs-raspberry
+if [ "${#RUNS[@]}" -ne 2 ]; then
+    echo "ERROR: expected exactly two multidataset run directories."
+    printf 'Found: %s\n' "${RUNS[@]}"
+    exit 1
+fi
+
+HOST_A="${RUNS[0]}"
+HOST_B="${RUNS[1]}"
+
+echo "Host A: $HOST_A"
+echo "Host B: $HOST_B"
 ```
 
-These commands describe the comparison workflow, not a claim that all
-three pairwise analyses have already been completed.
+The comparison can then be executed without manually copying either
+timestamp:
+
+```bash
+./compare_two_hosts.sh \
+    "$HOST_A" \
+    "$HOST_B" \
+    cross-host-analysis-host-a-vs-host-b
+```
+
+The commands intentionally require exactly two run directories. If more
+or fewer runs are present, the procedure stops instead of silently
+selecting the wrong pair.
 
 ---
 
@@ -772,9 +795,8 @@ cross-host statistics.
 The complete design expects:
 
 ```text
-288 matched conditions per dataset and host pair
-1,152 matched conditions across four datasets per host pair
-3,456 matched-condition comparisons across three host pairs
+288 matched conditions per dataset
+1,152 matched conditions across four datasets
 ```
 
 Cross-host outputs include the statistics required to inspect absolute
@@ -833,11 +855,11 @@ Across four datasets on one physical host:
 = 414,720 raw benchmark observations
 ```
 
-Across three physical hosts:
+Across two physical hosts:
 
 ```text
-3 x 414,720
-= 1,244,160 raw benchmark observations
+2 x 414,720
+= 829,440 raw benchmark observations
 ```
 
 The complete definitive design therefore comprises:
@@ -849,9 +871,9 @@ The complete definitive design therefore comprises:
 6 requested malicious fractions
 30 repetitions
 12 independent processes
-3 physical hosts
+2 physical hosts
 
-1,244,160 raw benchmark observations
+829,440 raw benchmark observations
 ```
 
 ---
@@ -929,7 +951,6 @@ The principal entry points for the definitive experiment are:
 | File | Purpose |
 |---|---|
 | `run_all_datasets_definitive.sh` | Executes the complete four-dataset definitive experiment on one host |
-| `runners_raspberry/` | Executes individual datasets on Raspberry Pi (see Individual Dataset Runners above) |
 | `compare_two_hosts.sh` | Runs the manual post-hoc comparison between two complete physical-host executions |
 | `scripts/compare_all_hosts.py` | Coordinates cross-host comparison across all four datasets |
 | `scripts/compare_hosts.py` | Performs matched-condition cross-host statistical comparison |
@@ -942,14 +963,41 @@ the corresponding repository scripts and `latency_artifact` components.
 
 ## Recommended Reproduction Workflow
 
-1. Obtain the repository and prepare each execution environment.
-2. Select and verify the experimental version and required datasets.
-3. Execute the appropriate runners on all three hosts.
-4. Preserve the complete independent host artifacts.
-5. Perform the pairwise comparisons described above.
-6. Inspect and preserve dataset-level and aggregate comparison outputs.
+A complete reproduction follows this sequence:
 
----
+```text
+1. Obtain the repository and required datasets
+                |
+                v
+2. Prepare the execution environment
+                |
+                v
+3. Select and verify the definitive experiment version
+                |
+                v
+4. Execute run_all_datasets_definitive.sh on Host A
+                |
+                v
+5. Preserve Host A result package
+                |
+                v
+6. Execute the same definitive experiment on Host B
+                |
+                v
+7. Preserve Host B result package
+                |
+                v
+8. Make both complete host run directories available
+                |
+                v
+9. Execute compare_two_hosts.sh
+                |
+                v
+10. Inspect dataset-level and aggregate cross-host results
+```
+
+Benchmark generation and cross-host comparison are deliberately separate
+stages of the workflow.
 
 ## Requirements
 
@@ -996,9 +1044,8 @@ GenIDS-UNSW15
 GenIDS-CIC18
 ```
 
-Before starting the multi-dataset runner, the required dataset files must
-be available in the expected locations. The individual Raspberry Pi
-runners automate dataset acquisition.
+Before starting a definitive run, the required dataset files must be
+available in the locations expected by the repository configuration.
 
 Dataset-specific preparation is performed before the common model
 training and timing stages.
@@ -1038,7 +1085,6 @@ latency-ids/
 ├── latency_artifact/
 ├── results/
 ├── scripts/
-├── runners_raspberry/
 ├── CITATION.cff
 ├── Dockerfile
 ├── LICENSE
@@ -1224,7 +1270,7 @@ analysis outputs
 the corresponding repository revision
 ```
 
-All three host executions should remain identifiable as independent
+The two host executions should remain identifiable as independent
 experimental runs.
 
 Cross-host analysis outputs should also be preserved separately rather
@@ -1255,12 +1301,12 @@ provides an additional mechanism for auditing the preserved files.
 Before considering a host execution complete, verify that:
 
 - all four datasets were evaluated;
-- the selected runners completed successfully;
+- the definitive runner completed successfully;
 - the expected dataset-level analyses were generated;
 - host metadata was preserved;
 - benchmark monitoring information was preserved;
-- the final package was created, where applicable;
-- the package checksum verifies successfully, where applicable; and
+- the final package was created;
+- the package checksum verifies successfully; and
 - the repository revision associated with the execution is known.
 
 Before performing the cross-host comparison, verify that:
@@ -1271,7 +1317,7 @@ Before performing the cross-host comparison, verify that:
 - the original host results remain unchanged.
 
 After the comparison, preserve the generated cross-host analysis
-alongside the independent host artifacts.
+alongside the two independent host artifacts.
 
 ---
 
@@ -1282,10 +1328,6 @@ alongside the independent host artifacts.
 ```bash
 ./run_all_datasets_definitive.sh
 ```
-
-### Run one dataset on Raspberry Pi
-
-See [Individual Dataset Runners for Raspberry Pi](#individual-dataset-runners-for-raspberry-pi).
 
 ### Verify a generated result package
 
