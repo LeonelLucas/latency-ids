@@ -21,138 +21,46 @@
 
 ## Overview
 
-Machine Learning Intrusion Detection Systems (ML-IDS) are commonly
-evaluated primarily through predictive metrics. However, deployment also
-depends on computational behavior: how quickly network flows can be
-processed, how batching changes inference cost, how traffic composition
-affects inference behavior, and whether experimental conclusions remain
-consistent across independent execution environments.
+This repository provides a reproducible experimental artifact for evaluating predictive quality and inference performance in flow-based Machine Learning Intrusion Detection Systems (ML-IDS). The study examines how model choice, inference granularity, traffic composition, and execution platform affect inference service time, amortized per-flow cost, and throughput.
 
-This repository provides the reproducible experimental infrastructure
-for a controlled multi-dataset evaluation of these aspects.
+## Experimental Methodology
 
-The definitive experiment evaluates four network intrusion datasets,
-eight machine learning models, multiple batch sizes and traffic
-compositions, repeated measurements across independent processes, and
-replication on three physical Linux hosts.
+<p align="center">
+  <img src="docs/images/metodologia.png" alt="Experimental methodology: dataset preparation, classifiers, inference configurations, execution platforms, measurement protocol, and statistical analysis" width="100%">
+</p>
+<p align="center"><em>Figure 1. Experimental workflow (original dissertation figure, in Portuguese).</em></p>
 
-The workflow separates dataset preparation, model training, definitive
-timing measurements, dataset-level analysis, result packaging, and
-post-hoc cross-host comparison.
-
----
+The workflow comprises dataset-specific feature selection, temporal partitioning and sampling; training and predictive evaluation of eight classifiers; inference under varying batch sizes and malicious-flow fractions; controlled execution on three physical platforms; and statistical analysis of predictive and computational outcomes. Predictive evaluation includes accuracy, average precision (AP), ROC-AUC, and precision.
 
 ## Experimental Design
-
-The definitive experiment follows the same high-level measurement
-protocol across all four datasets.
 
 | Dimension | Configuration |
 |---|---|
 | Datasets | 4 |
-| Machine learning models | 8 |
+| Models | 8 |
 | Batch sizes | 1, 8, 16, 32, 64, 100 |
-| Requested malicious fractions | 0.00, 0.01, 0.05, 0.10, 0.50, 1.00 |
-| Repetitions | 30 |
-| Independent processes | 12 |
-| Warm-up iterations | 20 |
-| Physical hosts | 3 |
-
-The combination of model, batch size, and requested malicious fraction
-defines the experimental conditions evaluated by the timing pipeline.
-
-Each condition is measured repeatedly, and the definitive protocol uses
-independent processes to reduce dependence on the state of a single
-long-running Python process.
-
-The complete four-dataset experiment is independently replicated on three
-physical Linux hosts.
-
-The resulting definitive experimental scale is summarized below.
-
-| Component | Definitive configuration |
-|---|---|
-| Datasets | CICIDS2017, GenIDS-CIC17, GenIDS-UNSW15, GenIDS-CIC18 |
-| Machine learning models | 8 |
-| Batch sizes | 1, 8, 16, 32, 64, 100 |
-| Requested malicious fractions | 0.00, 0.01, 0.05, 0.10, 0.50, 1.00 |
-| Repetitions | 30 |
+| Requested malicious fractions | 0%, 1%, 5%, 10%, 50%, 100% |
+| Repetitions per condition and process | 30 |
 | Independent processes | 12 |
 | Warm-up iterations | 20 |
 | Physical hosts | 3 |
 | Conditions per dataset | 288 |
-| Raw benchmark observations per dataset and host | 103,680 |
-| Raw benchmark observations per host | 414,720 |
-| Raw benchmark observations across three hosts | 1,244,160 |
-| Cross-host matched conditions per dataset and host pair | 288 |
+| Timing observations per dataset and host | 103,680 |
+| Timing observations per host | 414,720 |
+| Total timing observations | 1,244,160 |
 
----
+The timing observation count per dataset and host is `8 × 6 × 6 × 30 × 12 = 103,680`. Requested malicious fractions define the experimental conditions; their realization is constrained by integer batch sizes.
 
 ## Datasets
 
-Four datasets are included in the definitive evaluation.
+| Dataset | Description |
+|---|---|
+| CICIDS2017 | Corrected version of CICIDS2017 |
+| GenIDS-CIC17 | GenIDS dataset associated with CICIDS2017 |
+| GenIDS-UNSW15 | GenIDS dataset associated with UNSW-NB15 |
+| GenIDS-CIC18 | GenIDS dataset associated with CICIDS2018 |
 
-### CICIDS2017
-
-CICIDS2017 is evaluated using the corrected version adopted by the
-experimental pipeline.
-
-The dataset-specific preparation stage converts the source data into the
-representation expected by the common training and timing pipeline.
-
-### GenIDS-CIC17
-
-GenIDS-CIC17 provides an additional dataset associated with the
-CICIDS2017 scenario.
-
-Its dataset-specific preparation procedure is performed before the
-common experimental pipeline so that the definitive timing methodology
-can remain consistent across datasets.
-
-### GenIDS-UNSW15
-
-GenIDS-UNSW15 provides the GenIDS dataset associated with the UNSW-NB15
-scenario.
-
-As with the other datasets, dataset-specific preprocessing is separated
-from the common benchmark methodology.
-
-### GenIDS-CIC18
-
-GenIDS-CIC18 provides the fourth dataset in the definitive evaluation
-and is associated with the CICIDS2018 scenario.
-
-It is prepared using its corresponding dataset-specific pipeline and is
-then evaluated under the same definitive timing methodology used for the
-other datasets.
-
-On Raspberry Pi, GenIDS-CIC18 is evaluated using a memory-compatible
-[V2 subset](https://github.com/LeonelLucas/latency-ids/releases/tag/raspberry-datasets-v1.0)
-of the original dataset; this input difference should be considered in
-cross-host comparisons.
-
-### Common multi-dataset workflow
-
-The definitive runner executes the datasets sequentially:
-
-```text
-CICIDS2017
-    |
-    v
-GenIDS-CIC17
-    |
-    v
-GenIDS-UNSW15
-    |
-    v
-GenIDS-CIC18
-
-
-```
-
-Although dataset preparation is dataset-specific, the benchmark design
-is kept consistent so that the resulting measurements can be analyzed
-under the same experimental methodology.
+Dataset-specific preparation precedes the common training and timing pipeline. On Raspberry Pi, GenIDS-CIC18 uses a memory-compatible [V2 subset](https://github.com/LeonelLucas/latency-ids/releases/tag/raspberry-datasets-v1.0); this input difference must be considered in cross-host comparisons.
 
 ---
 
@@ -171,95 +79,31 @@ Eight machine learning models are evaluated.
 | AdaBoost (AB) |
 | Multilayer Perceptron (MLP) |
 
-The complete model name and its abbreviation are presented together
-when each algorithm is introduced. Abbreviations may subsequently be
-used as compact identifiers in result files, figures, tables, and
-analysis outputs.
+---
+
+## Measurement Boundary and Metrics
+
+The benchmark measures model inference service time, not end-to-end IDS latency. It does not include network capture, flow construction, or waiting for a batch to form.
+
+For a batch of size `b` with measured service time `L(b)` in seconds:
+
+- **Inference latency:** `L(b)`, the duration of the complete inference call.
+- **Amortized per-flow cost:** `L(b) / b`.
+- **Throughput:** `b / L(b)`, in flows per second.
+
+For `b = 1`, call latency and per-flow cost coincide. For larger batches, amortized cost is not the response time experienced by an individual flow. Predictive quality and computational performance are evaluated separately.
 
 ---
 
-## Timing Dimensions
+## Execution Platforms and Results
 
-The experimental design focuses on inference-time behavior rather
-than considering predictive performance alone.
+| Host | Architecture | Platform | Original run directory |
+|---|---|---|---|
+| Morty (Host-SW) | x86-64 | Linux | [multidataset-run-20260930T225117Z](multidataset-run-20260930T225117Z/) |
+| Cartman (Host-LC) | x86-64 | Linux, Intel Core i7-3770 | [multidataset-run-20261112T012654Z](multidataset-run-20261112T012654Z/) |
+| Raspberry Pi | ARM64 | Raspberry Pi 3 Model B | [Results](multidataset-run-20261101T205354Z/) |
 
-Two central operational dimensions are latency and throughput.
-
-### Latency
-
-Latency represents the time required to perform model inference.
-
-The experiment evaluates inference under different call sizes, ranging
-from processing a single flow per call to processing multiple flows in
-a batch.
-
-The configured batch sizes are:
-
-```text
-1, 8, 16, 32, 64, 100
-```
-
-For batched execution, total call latency and per-flow timing can be
-distinguished. This is important because the cost of one inference call
-can be amortized across multiple flows.
-
-### Throughput
-
-Throughput represents the number of network flows that can be processed
-per unit of time.
-
-Batching may increase throughput by amortizing inference-call overhead,
-but throughput and latency describe different operational properties and
-must therefore be interpreted separately.
-
-The experimental pipeline preserves the timing information required to investigate
-this relationship.
-
----
-
-## Traffic Composition
-
-Inference behavior is evaluated under multiple requested malicious-flow
-fractions.
-
-The configured fractions are:
-
-```text
-0.00
-0.01
-0.05
-0.10
-0.50
-1.00
-```
-
-These conditions range from entirely benign input to entirely malicious
-input, with intermediate traffic compositions between the two extremes.
-
-This design allows the analysis to investigate whether model inference
-behavior is sensitive to the composition of the input flows.
-
----
-
-## Repeated Measurement Strategy
-
-Timing experiments are inherently sensitive to transient execution
-conditions. The definitive experiment therefore uses repeated
-measurements and independent processes.
-
-The main configured parameters are:
-
-```text
-Repetitions:             30
-Independent processes:   12
-Warm-up iterations:      20
-```
-
-Warm-up iterations are performed before retained timing measurements.
-
-Independent processes provide separate execution contexts for repeated
-benchmarking rather than relying exclusively on repeated measurements
-inside one persistent process.
+Each host completed the four-dataset evaluation independently. Host labels describe execution contexts rather than hardware quality. Absolute timing values need not be identical across platforms.
 
 ---
 
@@ -338,94 +182,38 @@ The default configured cooldown interval is:
 
 ---
 
-## Three-Host Replication
+## Requirements
 
-The evaluation comprises three independent physical Linux hosts:
+The definitive experiment is designed for a Linux execution environment
+with Docker and the host-level interfaces required by the experimental
+controls.
 
-| Host | Architecture | Platform |
-|---|---|---|
-| Morty | x86-64 | Linux |
-| Cartman | x86-64 | Linux |
-| Raspberry Pi | ARM64 | Raspberry Pi 3 Model B |
+At minimum, the execution environment must provide the tools and
+permissions required by the repository and definitive runner.
 
-Each host evaluates all four datasets under the common timing design and
-preserves its own results, metadata, monitoring information, and logs.
-Absolute latency may differ across hardware and execution environments.
+Important host-side dependencies include:
+
+```text
+Linux
+Docker
+Bash
+Python 3
+taskset
+standard GNU/Linux command-line utilities
+```
+
+The benchmark environment itself is built and executed according to the
+repository configuration.
+
+The definitive runner performs additional validation before benchmark
+execution and stops when mandatory experimental requirements are not
+satisfied.
 
 ---
 
-## Cross-Host Analysis
+## Dataset Availability
 
-Cross-host analysis is deliberately separated from benchmark execution.
-
-Each definitive host execution produces and preserves its own results.
-After the selected host executions are complete, the cross-host analysis
-is invoked manually for each host pair.
-
-This separation keeps measurement generation distinct from subsequent
-comparative analysis.
-
-### Matched Experimental Conditions
-
-Equivalent conditions within each host pair are matched using the experimental
-configuration.
-
-The comparison considers the same:
-
-```text
-model
-batch size
-requested malicious fraction
-```
-
-for each dataset.
-
-Each dataset contains:
-
-```text
-8 models
-x 6 batch sizes
-x 6 requested malicious fractions
-= 288 matched experimental conditions
-```
-
-Across four datasets, this corresponds to:
-
-```text
-288 x 4 = 1,152 matched conditions per host pair
-```
-
----
-
-## Cross-Host Statistics
-
-The post-hoc comparison evaluates both absolute timing differences and
-rank consistency.
-
-### Latency Ratios
-
-Latency ratios describe the relative execution speed of equivalent
-conditions on the two hosts.
-
-These ratios characterize differences in absolute timing between the
-physical systems.
-
-### Cross-Host Spearman Rank Correlation
-
-For the post-hoc cross-host comparison, Spearman rank correlation
-evaluates whether the relative ordering of matched experimental
-conditions remains consistent across the two physical hosts.
-
-This cross-host statistic is distinct from the separate tree-path
-Spearman analysis described in the experimental protocol. The tree-path
-analysis investigates the relationship between tree-path behavior and
-latency, whereas the cross-host statistic evaluates rank consistency
-between equivalent conditions executed on different hosts.
-
-Two hosts may therefore have different absolute latencies while still
-producing very similar rankings among models and experimental
-configurations. High cross-host rank consistency must not be interpreted
-as evidence that the hosts have identical absolute performance.
+Before starting the multi-dataset runner, make the required source datasets available in the expected locations. The individual Raspberry Pi runners automate acquisition and integrity verification. Consult the dataset preparation scripts and configuration files for the required source organization.
 
 ---
 
@@ -506,6 +294,8 @@ image, adequate swap, stable power, cooling, and the `performance` CPU
 governor. Benchmark execution uses CPU 3 and one computational thread.
 The original Raspberry Pi runs were completed and validated; the later
 automated runners have not been fully re-executed end to end.
+
+---
 
 ## Output Organization
 
@@ -787,126 +577,35 @@ comparison.
 
 ---
 
-## Experimental Scale
+## Cross-Host Statistics
 
-For one dataset, the definitive timing design contains:
+The post-hoc comparison evaluates both absolute timing differences and
+rank consistency.
 
-```text
-8 machine learning models
-x 6 batch sizes
-x 6 requested malicious fractions
-= 288 experimental conditions
-```
+### Latency Ratios
 
-Each condition is evaluated using:
+Latency ratios describe the relative execution speed of equivalent
+conditions on the two hosts.
 
-```text
-30 repetitions
-x 12 independent processes
-```
+These ratios characterize differences in absolute timing between the
+physical systems.
 
-Therefore, one dataset produces:
+### Cross-Host Spearman Rank Correlation
 
-```text
-288 conditions
-x 30 repetitions
-x 12 processes
-= 103,680 raw benchmark observations
-```
+For the post-hoc cross-host comparison, Spearman rank correlation
+evaluates whether the relative ordering of matched experimental
+conditions remains consistent across the two physical hosts.
 
-Across four datasets on one physical host:
+This cross-host statistic is distinct from the separate tree-path
+Spearman analysis described in the experimental protocol. The tree-path
+analysis investigates the relationship between tree-path behavior and
+latency, whereas the cross-host statistic evaluates rank consistency
+between equivalent conditions executed on different hosts.
 
-```text
-4 x 103,680
-= 414,720 raw benchmark observations
-```
-
-Across three physical hosts:
-
-```text
-3 x 414,720
-= 1,244,160 raw benchmark observations
-```
-
-The complete definitive design therefore comprises:
-
-```text
-4 datasets
-8 machine learning models
-6 batch sizes
-6 requested malicious fractions
-30 repetitions
-12 independent processes
-3 physical hosts
-
-1,244,160 raw benchmark observations
-```
-
----
-
-## Reproducibility and Integrity
-
-The experimental infrastructure is designed so that a definitive result
-can be associated with a specific implementation and execution
-environment.
-
-Important reproducibility elements include:
-
-- a frozen experiment version;
-- independent host executions;
-- deterministic dataset-preparation procedures where applicable;
-- explicit benchmark configuration;
-- warm-up before retained timing measurements;
-- repeated measurements;
-- independent benchmark processes;
-- CPU governor verification;
-- host-load gating;
-- host monitoring;
-- cooldown between dataset executions;
-- dataset-level output validation;
-- preservation of host metadata;
-- preservation of execution logs;
-- artifact snapshots;
-- SHA-256 integrity information; and
-- post-hoc cross-host comparison.
-
-The objective is not to assume that independent machines produce
-identical absolute timing values. Instead, the experimental design preserves the
-information needed to distinguish absolute performance differences from
-the consistency of experimental behavior across environments.
-
----
-
-## Interpretation of Cross-Host Results
-
-Cross-host measurements should be interpreted carefully.
-
-A difference in absolute latency between Host A and Host B does not, by
-itself, indicate a failure of reproducibility. Different physical
-systems may execute the same workload at different absolute speeds.
-
-For this reason, the analysis distinguishes between:
-
-```text
-Absolute timing behavior
-        |
-        +--> latency ratios
-
-Relative ordering of matched conditions
-        |
-        +--> cross-host Spearman rank correlation
-```
-
-Latency ratios quantify differences in absolute execution time.
-
-The cross-host Spearman rank correlation evaluates whether matched
-experimental conditions retain a similar relative ordering across the
-two hosts.
-
-This statistic is separate from the tree-path Spearman analysis defined
-in the experimental protocol. Latency ratios and cross-host rank
-correlation answer related but different questions and should not be
-interpreted as interchangeable.
+Two hosts may therefore have different absolute latencies while still
+producing very similar rankings among models and experimental
+configurations. High cross-host rank consistency must not be interpreted
+as evidence that the hosts have identical absolute performance.
 
 ---
 
@@ -928,90 +627,6 @@ the corresponding repository scripts and `latency_artifact` components.
 
 ---
 
-## Recommended Reproduction Workflow
-
-1. Obtain the repository and prepare each execution environment.
-2. Select and verify the experimental version and required datasets.
-3. Execute the appropriate runners on all three hosts.
-4. Preserve the complete independent host artifacts.
-5. Perform the pairwise comparisons described above.
-6. Inspect and preserve dataset-level and aggregate comparison outputs.
-
----
-
-## Requirements
-
-The definitive experiment is designed for a Linux execution environment
-with Docker and the host-level interfaces required by the experimental
-controls.
-
-At minimum, the execution environment must provide the tools and
-permissions required by the repository and definitive runner.
-
-Important host-side dependencies include:
-
-```text
-Linux
-Docker
-Bash
-Python 3
-taskset
-standard GNU/Linux command-line utilities
-```
-
-The benchmark environment itself is built and executed according to the
-repository configuration.
-
-The definitive runner performs additional validation before benchmark
-execution and stops when mandatory experimental requirements are not
-satisfied.
-
----
-
-## Dataset Availability
-
-The source datasets are not treated as interchangeable inputs.
-
-Each of the four datasets has its corresponding preparation procedure,
-validation logic, and expected source organization.
-
-The definitive evaluation uses:
-
-```text
-CICIDS2017
-GenIDS-CIC17
-GenIDS-UNSW15
-GenIDS-CIC18
-```
-
-Before starting the multi-dataset runner, the required dataset files must
-be available in the expected locations. The individual Raspberry Pi
-runners automate dataset acquisition.
-
-Dataset-specific preparation is performed before the common model
-training and timing stages.
-
-This separation is intentional:
-
-```text
-Dataset-specific source data
-            |
-            v
-Dataset-specific preparation
-            |
-            v
-Common experimental representation
-            |
-            v
-Common training and timing methodology
-```
-
-The purpose is to accommodate differences among the source datasets
-without changing the core definitive timing methodology for each
-dataset.
-
----
-
 ## Repository Structure
 
 The repository separates experimental implementation, configuration,
@@ -1023,6 +638,8 @@ A high-level view is:
 latency-ids/
 ├── configs/
 ├── docs/
+│   └── images/
+│       └── metodologia.png
 ├── latency_artifact/
 ├── results/
 ├── scripts/
@@ -1045,46 +662,6 @@ common high-level organization for all four datasets.
 
 ---
 
-## Experimental Infrastructure
-
-The main experimental implementation is contained in:
-
-```text
-latency_artifact/
-```
-
-Supporting scripts are contained in:
-
-```text
-scripts/
-```
-
-Experiment configuration is contained in:
-
-```text
-configs/
-```
-
-The definitive multi-dataset orchestration is provided by:
-
-```text
-run_all_datasets_definitive.sh
-```
-
-The post-hoc two-host comparison is exposed through:
-
-```text
-compare_two_hosts.sh
-```
-
-These components have distinct responsibilities.
-
-The definitive runner generates measurements independently on each
-physical host, whereas the cross-host wrapper operates only on completed
-host results.
-
----
-
 ## Protocol Documentation
 
 The detailed experimental protocol is documented in:
@@ -1101,60 +678,6 @@ rules.
 When reproducing or extending the experiment, the protocol should be
 considered together with the frozen implementation used to generate the
 corresponding results.
-
----
-
-
-## Important Interpretation Notes
-
-The definitive experiment is designed to evaluate computational behavior
-under controlled experimental conditions.
-
-Several distinctions are important when interpreting the outputs.
-
-### Predictive performance and computational performance
-
-Predictive quality and inference performance represent different aspects
-of an ML-IDS.
-
-A model with strong predictive performance is not necessarily the model
-with the lowest inference latency or highest throughput.
-
-The experimental methodology therefore preserves computational
-measurements independently of predictive metrics.
-
-### Batch latency and per-flow cost
-
-Processing multiple flows in one inference call changes the unit being
-measured.
-
-Total batch latency describes the cost of the complete inference call,
-whereas per-flow timing distributes that cost across the flows contained
-in the batch.
-
-These quantities should not be interpreted as identical.
-
-### Latency and throughput
-
-Latency and throughput are related but distinct.
-
-A configuration may improve throughput by processing more flows per
-inference call while still exhibiting a different total call latency.
-
-Both dimensions are therefore retained in the analysis.
-
-### Absolute performance and cross-host consistency
-
-Different physical hosts may produce different absolute timing values.
-
-Cross-host reproducibility should consequently be examined using the
-preserved absolute timing information together with the relative
-ordering of matched experimental conditions.
-
-The post-hoc cross-host analysis uses Spearman rank correlation for the
-latter purpose. This cross-host statistic must not be confused with the
-separate tree-path Spearman analysis defined in the experimental
-protocol.
 
 ---
 
@@ -1220,24 +743,6 @@ than replacing either host's original measurements.
 
 ---
 
-## Integrity Verification
-
-After transferring a packaged host result, verify its checksum before
-using it for subsequent analysis.
-
-For example:
-
-```bash
-sha256sum -c multidataset-results-<timestamp>.tar.gz.sha256
-```
-
-The expected result is an `OK` verification for the archive.
-
-The internal integrity information contained in the packaged artifact
-provides an additional mechanism for auditing the preserved files.
-
----
-
 ## Reproducibility Checklist
 
 Before considering a host execution complete, verify that:
@@ -1260,41 +765,6 @@ Before performing the cross-host comparison, verify that:
 
 After the comparison, preserve the generated cross-host analysis
 alongside the independent host artifacts.
-
----
-
-## Quick Reference
-
-### Run the complete experiment on one host
-
-```bash
-./run_all_datasets_definitive.sh
-```
-
-### Run one dataset on Raspberry Pi
-
-See [Individual Dataset Runners for Raspberry Pi](#individual-dataset-runners-for-raspberry-pi).
-
-### Verify a generated result package
-
-```bash
-sha256sum -c multidataset-results-<timestamp>.tar.gz.sha256
-```
-
-### Compare two complete host executions
-
-```bash
-./compare_two_hosts.sh \
-    HOST_A_RUN \
-    HOST_B_RUN \
-    CROSS_HOST_OUTPUT_DIR
-```
-
-### Detailed methodology
-
-```text
-PROTOCOL.md
-```
 
 ---
 
@@ -1325,9 +795,3 @@ LICENSE
 ```
 
 for the licensing terms applicable to this repository.
-
----
-
-<p align="center">
-  <strong>Reproducible measurements. Independent hosts. Preserved artifacts.</strong>
-</p>
