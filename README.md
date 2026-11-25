@@ -1,7 +1,6 @@
-
-
+   # Latency-Aware Evaluation of Flow-Based ML-IDS
 <p align="center">
-  # Latency-Aware Evaluation of Flow-Based ML-IDS
+
   <strong>
     A reproducible experimental artifact for evaluating latency,
     throughput, batching, traffic composition, and cross-host robustness
