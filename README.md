@@ -1,6 +1,6 @@
-   # Latency-Aware Evaluation of Flow-Based ML-IDS
-<p align="center">
+# Latency-Aware Evaluation of Flow-Based ML-IDS
 
+<p align="center">
   <strong>
     A reproducible experimental artifact for evaluating latency,
     throughput, batching, traffic composition, and cross-host robustness
@@ -126,13 +126,10 @@ It is prepared using its corresponding dataset-specific pipeline and is
 then evaluated under the same definitive timing methodology used for the
 other datasets.
 
-On the Raspberry Pi, memory constraints require the deterministic V2
-subset of GenIDS-CIC18, available in the
-[dataset release](https://github.com/LeonelLucas/latency-ids/releases/tag/raspberry-datasets-v1.0).
-The [original GenIDS dataset](https://doi.org/10.5281/zenodo.21435638)
-is the source of this subset. The timing design is preserved, but the
-input data differ from the full-dataset executions; comparisons involving
-this subset must account for that distinction.
+On Raspberry Pi, GenIDS-CIC18 is evaluated using a memory-compatible
+[V2 subset](https://github.com/LeonelLucas/latency-ids/releases/tag/raspberry-datasets-v1.0)
+of the original dataset; this input difference should be considered in
+cross-host comparisons.
 
 ### Common multi-dataset workflow
 
@@ -353,7 +350,6 @@ The evaluation comprises three independent physical Linux hosts:
 
 Each host evaluates all four datasets under the common timing design and
 preserves its own results, metadata, monitoring information, and logs.
-The Raspberry Pi uses the GenIDS-CIC18 V2 subset described above.
 Absolute latency may differ across hardware and execution environments.
 
 ---
@@ -662,14 +658,6 @@ supporting scripts available at packaging time.
 
 The package also contains SHA-256 hashes for its internal files, allowing
 the preserved artifact contents to be checked for integrity.
-
----
-
-## Running on Three Physical Hosts
-
-Execute the multi-dataset runner on each x86-64 host and the individual
-dataset runners on Raspberry Pi. Preserve the original run directories
-independently before performing the pairwise comparisons below.
 
 ---
 
