@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE=latency-ids:raspberry-pi
 MONITOR_PID=""
 ROOT=""
@@ -73,7 +73,7 @@ run_dataset() {
 
     cd "$REPO"
 
-    download_verified "https://github.com/LeonelLucas/latency-ids/releases/download/raspberry-datasets-v1.0/GenIDS-CIC18-subset-v2.csv.gz" "$DATA" "$SHA" "gzip" ""
+    download_verified "https://zenodo.org/api/records/21435638/files/GenIDS-NB15.zip/content" "$DATA" "$SHA" "zip" "GenIDS-NB15/GenIDS-UNSW15.csv"
     [[ -s "$DATA" ]] || die "Dataset ausente: $DATA"
     echo "$SHA  $DATA" | sha256sum -c - || die "Hash incorreto"
     [[ -f "$CFG" ]] || die "Config ausente"
@@ -342,7 +342,7 @@ print("CPU: 3; threads: 1")
 }
 
 run_dataset \
-    genids_cic18 \
-    7676a4b04dba4ddc9e5c7fcc532e6c72b915251e3c88c5f055f82b185f9b907a \
-    GenIDS-CIC18-subset-v2.csv \
-    genids_cic18
+    genids_unsw15 \
+    2437a5fb6ae6f37d47e24e2fc4ee2df243248679f412a0f3dd1ffd7e757ddb1e \
+    GenIDS-UNSW15.csv \
+    genids_unsw15
