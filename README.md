@@ -28,7 +28,7 @@ This repository provides a reproducible experimental artifact for evaluating pre
 <p align="center">
   <img src="docs/images/metodologia.png" alt="Experimental methodology: dataset preparation, classifiers, inference configurations, execution platforms, measurement protocol, and statistical analysis" width="100%">
 </p>
-<p align="center"><em>Figure 1. Experimental workflow (original dissertation figure, in Portuguese).</em></p>
+<p align="center"><em>Figure 1. Overview of the experimental methodology.</em></p>
 
 The workflow comprises dataset-specific feature selection, temporal partitioning and sampling; training and predictive evaluation of eight classifiers; inference under varying batch sizes and malicious-flow fractions; controlled execution on three physical platforms; and statistical analysis of predictive and computational outcomes. Predictive evaluation includes accuracy, average precision (AP), ROC-AUC, and precision.
 
