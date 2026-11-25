@@ -1,0 +1,2 @@
+pid 21770's current affinity list: 0-3
+pid 21770's new affinity list: 0

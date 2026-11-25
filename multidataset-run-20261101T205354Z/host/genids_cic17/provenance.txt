@@ -1,0 +1,7 @@
+dataset=genids_cic17
+source=/home/lucasleonel/latency-ids/../datasets/GenIDS-CIC17.csv
+source_sha256=946c98e3562f2c7e2a1c6cea9d5d180db391a1b7390e76bb694b46f89bddf5b9
+config_sha256=336a7c0e1b2b8cf09c5f3b7f37fbe3b2596e7c53a83ad3ce575349e3bb74375d
+git_commit=3d63705513338490b1b4c5f2afb98200049e3c72
+docker_image_id=sha256:10d5ab9b94b3e7201f86dd0b6d6f18d05f7f736beb68e0acd1af8002dd624fba
+started_utc=2026-11-03T02:32:06Z

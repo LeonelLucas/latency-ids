@@ -1,0 +1,7 @@
+dataset=genids_unsw15
+source=/home/lucasleonel/latency-ids/../datasets/GenIDS-UNSW15.csv
+source_sha256=2437a5fb6ae6f37d47e24e2fc4ee2df243248679f412a0f3dd1ffd7e757ddb1e
+config_sha256=96af057dcaf0f84845f5747b21d0326e0a6398ed4b97bae50331a3e8a209199a
+git_commit=3d63705513338490b1b4c5f2afb98200049e3c72
+docker_image_id=sha256:10d5ab9b94b3e7201f86dd0b6d6f18d05f7f736beb68e0acd1af8002dd624fba
+started_utc=2026-11-03T21:32:15Z

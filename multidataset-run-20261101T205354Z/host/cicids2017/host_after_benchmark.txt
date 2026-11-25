@@ -1,0 +1,62 @@
+2026-11-03T19:46:19+00:00
+Linux LucasLeonelMLIDS 6.18.50+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.18.50-1+rpt1 (2026-09-11) aarch64 GNU/Linux
+Architecture:                            aarch64
+CPU op-mode(s):                          32-bit, 64-bit
+Byte Order:                              Little Endian
+CPU(s):                                  4
+On-line CPU(s) list:                     0-3
+Vendor ID:                               ARM
+Model name:                              Cortex-A53
+Model:                                   4
+Thread(s) per core:                      1
+Core(s) per cluster:                     4
+Socket(s):                               -
+Cluster(s):                              1
+Stepping:                                r0p4
+Frequency boost:                         disabled
+CPU(s) scaling MHz:                      100%
+CPU max MHz:                             1200.0000
+CPU min MHz:                             600.0000
+BogoMIPS:                                38.40
+Flags:                                   fp asimd evtstrm crc32 cpuid
+L1d cache:                               128 KiB (4 instances)
+L1i cache:                               128 KiB (4 instances)
+L2 cache:                                512 KiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-3
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Not affected
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Not affected
+Vulnerability Spectre v1:                Mitigation; __user pointer sanitization
+Vulnerability Spectre v2:                Not affected
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+               total        used        free      shared  buff/cache   available
+Mem:           905Mi       235Mi       481Mi       572Ki       245Mi       669Mi
+Swap:          4.9Gi       159Mi       4.7Gi
+NAME            TYPE      SIZE   USED PRIO
+/dev/zram0      partition 905M 132.1M  100
+/swapfile-cic17 file        4G  27.5M   10
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/mmcblk0p2   29G   22G  5.9G  79% /
+ 16:46:19 up  3:37,  3 users,  load average: 1.01, 1.02, 1.00
+1.01 1.02 1.00 1/296 11508
+cpu0=performance
+cpu1=performance
+cpu2=performance
+cpu3=performance
+temp=50.5'C
+throttled=0x0
+frequency(48)=1200000000

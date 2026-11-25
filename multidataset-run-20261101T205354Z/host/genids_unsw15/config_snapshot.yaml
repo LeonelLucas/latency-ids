@@ -1,0 +1,86 @@
+seed: 20260719
+
+paths:
+  data_file: ${GENIDS_DATA_FILE}
+  output_dir: ${LATENCY_OUTPUT_DIR}
+
+genids:
+  name: GenIDS-UNSW15
+
+  date_column: date
+  label_column: binary
+  benign_label: benign
+  malicious_label: malign
+
+  chunksize: 100000
+
+  # Features numéricas restantes após remover identificadores,
+  # timestamps absolutos, metadados de aplicação e labels.
+  #
+  # Diferentemente do GenIDS-CIC17, mantemos:
+  # src_port, dst_port, protocol, ip_version, vlan_id e tunnel_id.
+  # O pipeline CICIDS2017 original também não estabelece uma regra
+  # geral de exclusão de portas/protocolo.
+  expected_feature_count: 63
+
+  exclude_columns:
+    # Identificadores de origem/destino
+    - expiration_id
+    - src_ip
+    - src_mac
+    - src_oui
+    - dst_ip
+    - dst_mac
+    - dst_oui
+
+    # Timestamps absolutos
+    - bidirectional_first_seen_ms
+    - bidirectional_last_seen_ms
+    - src2dst_first_seen_ms
+    - src2dst_last_seen_ms
+    - dst2src_first_seen_ms
+    - dst2src_last_seen_ms
+
+    # Metadados de aplicação
+    - application_name
+    - application_category_name
+    - application_is_guessed
+    - application_confidence
+
+    # Metadados temporais
+    - date
+    - hours
+
+    # Labels
+    - binary
+    - multiclass
+
+data:
+  splits:
+    train:
+      days:
+        - "2015-01-22"
+      max_per_class: 100000
+
+    validation:
+      days:
+        - "2015-01-23"
+      max_per_class: 25000
+
+    test:
+      days:
+        - "2015-02-18"
+      max_per_class: 100000
+
+models: [LoR, SGD, NB, DT, RF, GB, AB, MLP]
+
+evaluation:
+  malicious_fractions: [0.01, 0.05, 0.1, 0.5]
+  max_samples: 100000
+
+benchmark:
+  batch_sizes: [1, 8, 16, 32, 64, 100]
+  malicious_fractions: [0.0, 0.01, 0.05, 0.1, 0.5, 1.0]
+  repetitions: 30
+  process_runs: 12
+  warmup: 20
